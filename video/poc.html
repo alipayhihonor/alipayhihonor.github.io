@@ -16,11 +16,14 @@
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
+      margin-right: 10px;
     }
   </style>
 </head>
 <body>
-  <button id="runCodeButton">Run Code</button>
+  <button id="getLocationButton">Get Location</button>
+  <button id="writeFileButton">Write File</button>
+  <button id="readCookiesButton">Read Cookies</button>
 
   <script>
     // window.onload = function() {
@@ -45,36 +48,28 @@
       alert('failure:' + JSON.stringify(e));
     }
 
-    // Add event listener to the button to execute different code snippets
-    document.getElementById('runCodeButton').addEventListener('click', function() {
-      // Example: Execute code based on user choice or predefined logic
-      let userChoice = prompt("Choose an action: 1 for Location, 2 for File, 3 for Cookies");
+    // Button to get location
+    document.getElementById('getLocationButton').addEventListener('click', function() {
+      window.__windvane__.nativeCall('WVLocation.getLocation', JSON.stringify(params), "successCallback", "failureCallback");
+    });
 
-      switch (userChoice) {
-        case "1":
-          // Get location
-          window.__windvane__.nativeCall('WVLocation.getLocation', JSON.stringify(params), "successCallback", "failureCallback");
-          break;
-        case "2":
-          // Write file
-          var file_params = {
-            "mode": "overwrite",
-            "data": "123",
-            "fileName": "test.txt",
-            "share": true,
-          };
-          window.__windvane__.nativeCall('WVFile.write', JSON.stringify(file_params), "successCallback", "failureCallback");
-          break;
-        case "3":
-          // Read cookies
-          var cookie_params = {
-            url: "www.youku.com"
-          };
-          window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "successCallback", "failureCallback");
-          break;
-        default:
-          alert("Invalid choice");
-      }
+    // Button to write a file
+    document.getElementById('writeFileButton').addEventListener('click', function() {
+      var file_params = {
+        "mode": "overwrite",
+        "data": "123",
+        "fileName": "test.txt",
+        "share": true,
+      };
+      window.__windvane__.nativeCall('WVFile.write', JSON.stringify(file_params), "successCallback", "failureCallback");
+    });
+
+    // Button to read cookies
+    document.getElementById('readCookiesButton').addEventListener('click', function() {
+      var cookie_params = {
+        url: "www.youku.com"
+      };
+      window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "successCallback", "failureCallback");
     });
   </script>
 </body>
