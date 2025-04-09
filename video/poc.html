@@ -27,13 +27,13 @@
   <button id="userTracker">User Tracker</button>
 
   <script>
-    // window.onload = function() {
-    //   if (window.__windvane__) {
-    //     window.__windvane__.onSuccess = function(callbackFunction, data) {
-    //       alert("data " + JSON.stringify(data));
-    //     };
-    //   }
-    // };
+    window.onload = function() {
+      if (window.__windvane__) {
+        window.__windvane__.onSuccess = function(callbackFunction, data) {
+          alert("data " + JSON.stringify(data));
+        };
+      }
+    };
 
     var params = {
       // 是否获取高精度的位置
