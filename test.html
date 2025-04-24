@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEST</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .info {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <script>
+
+    window.onload = function() {
+      if (window.__windvane__) {
+        //alert("test");
+        window.__windvane__.onSuccess = function(callbackFunction, data) {
+          alert("success " + JSON.stringify(data));
+        } 
+        window.__windvane__.onFailure = function(callbackFunction, data) {
+          alert("failure " + JSON.stringify(data));
+      }
+    }
+  }
+  
+
+// cookie
+var cookie_params = {
+  url : "cainiao.com"
+}
+window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "wvapi:123", "https://equity.tmall.com");
+
+
+var cookie_params_1 = {
+  url : "taobao.com"
+}
+window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params_1), "wvapi:123", "https://equity.tmall.com");
+
+var cookie_params_2 = {
+  url : "tmall.com"
+}
+window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params_2), "wvapi:123", "https://equity.tmall.com");
+
+// jieping
+// var jieping_params = {
+//   inAlbum: true
+// };
+// window.__windvane__.nativeCall('WVScreen.capture', JSON.stringify(jieping_params), "wvapi:123", "failureCallback");
+
+</script>
+</body>
+</html>
