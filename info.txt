@@ -1,0 +1,8 @@
+<class: android.taobao.windvane.jsbridge.WVBridgeEngine>.nativeCall is called with signature java.lang.String, java.lang.String, java.lang.String, java.lang.String
+Arguments: BoneModel.getService, {"sdkName":"bone_runtime","minSDKVer":"*","serviceName":"BoneUserInfoService"}, wvapi:279870, https://pages.tmall.com/wow/z/tmall-genine/nx-test-group/j287z38td7dejbfjyie5?_ali_nav_bar_=false&_ali_trans_status_bar_=true&pageSource=fromfulizhongxin
+<class: android.taobao.windvane.jsbridge.WVBridgeEngine>.nativeCall result=undefined
+<class: android.taobao.windvane.jsbridge.WVBridgeEngine>.nativeCall is called with signature java.lang.String, java.lang.String, java.lang.String, java.lang.String
+Arguments: BoneModel.callService, {"serviceId":"bone_runtime/BoneUserInfoService@247520055","methodName":"getUserInfo","args":[]}, wvapi:279871, https://pages.tmall.com/wow/z/tmall-genine/nx-test-group/j287z38td7dejbfjyie5?_ali_nav_bar_=false&_ali_trans_status_bar_=true&pageSource=fromfulizhongxin
+<class: android.taobao.windvane.jsbridge.WVBridgeEngine>.nativeCall result=undefined
+<class: android.taobao.windvane.jsbridge.WVBridgeEngine>.nativeCall is called with signature java.lang.String, java.lang.String, java.lang.String, java.lang.String
+Arguments: AppModel.getUserInfo, {}, wvapi:279872, https://pages.tmall.com/wow/z/tmall-genine/nx-test-group/j287z38td7dejbfjyie5?_ali_nav_bar_=false&_ali_trans_status_bar_=true&pageSource=fromfulizhongxin
