@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEST</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .info {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+    <button id="test">test</button>
+    <button id="QW_getUserInfo">QW_getUserInfo</button>
+  <script>
+    window.onload = function() {
+      if (window.__windvane__) {
+        window.__windvane__.onSuccess = function(callbackFunction, data) {
+          alert("success " + JSON.stringify(data));
+    //       var json_data = JSON.parse(data);
+    //       var serviceId = json_data["serviceId"]
+    //             var call_param = {
+    //   "serviceId": serviceId,
+    //   "methodName": "getUserInfo", 
+    //   "args": []
+    // }
+    // window.__windvane__.nativeCall("BoneModel.callService", JSON.stringify(call_param), "wvapi:279871", "https://pages.tmall.com/wow/z/tmall-genine/nx-test-group/") 
+          
+        } 
+
+        window.__windvane__.onFailure = function(wvapi, data) {
+          alert("fail " + Json.stringify(data))
+        }
+      }
+
+      if (!window.WebViewJavascriptBridge) {
+      
+        window.WebViewJavascriptBridge = {
+          _handleMessageFromNative: function(message) {
+            alert(message)
+          }
+        }
+      }
+    }
+
+
+    // var tongyi_param = {
+ 
+    //     "apiName": "biz.util.getClipboardData",
+    //     "params": {
+    //       "targetUrl": "https://m.tongyi.com/app/tongyi-fe/tongyi-hybrid-next/research-detail",
+    //       "url": "https://m.tongyi.com/app/tongyi-fe/tongyi-hybrid-next/research-detail"
+    //     }
+    //   }
+    //   window.__windvane__.nativeCall("TongyiJSBridge.callTongyiAPI", JSON.stringify(tongyi_param), "wvapi:104670", "https://m.tongyi.com/app/tongyi-fe/tongyi-hybrid-next/research-detail")
+
+
+
+    document.querySelector('#QW_getUserInfo').addEventListener('click', function() {
+      let aliyun_param = [
+      {
+        handlerName: "internal.biz.getAccessToken",
+        data: {}, 
+        callbackId: "cb_1_123",
+        hasSuccessCallback: true
+      }
+    ]
+    window.AliYunPanInterface.callNative(JSON.stringify(aliyun_param))
+
+      // window.__windvane__.nativeCall("QianWenPlugin.getUserInfo", "{}", "wvapi:104671", "https://m.tongyi.com/app/tongyi-fe/tongyi-hybrid-next/research-detail")
+      var tongyi_param = {
+        // "apiName": "biz.device.darkmode",
+        //"apiName": "biz.chat.clearChatContext",
+        // "apiName": "biz.chat.goHistoryPage",
+        // "apiName": "biz.device.getSystemInfo",
+        // "apiName": "internal.aiNote.getInputData",
+        // "apiName": "internal.user.getUserInfo",
+        // "apiName": "internal.util.callSSE",
+        // "apiName": "biz.audio.startRecording",
+        //"apiName": "biz.util.getScreenshot",
+        "apiName": "biz.util.getClipboardData",
+        "params": {
+          "targetUrl": "https://m.tongyi.com/app/tongyi-fe/tongyi-hybrid-next/research-detail",
+          "url": "https://m.tongyi.com/app/tongyi-fe/tongyi-hybrid-next/research-detail"
+        }
+      }
+      window.__windvane__.nativeCall("TongyiJSBridge.callTongyiAPI", JSON.stringify(tongyi_param), "wvapi:104670", "https://m.tongyi.com/app/tongyi-fe/tongyi-hybrid-next/research-detail")
+
+  })
+
+    var cookie_params = {
+         url : "www.taobao.com"
+     }
+     window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "wvapi:123", "https://equity.tmall.com");
+     
+
+
+    var cookie_params_1 = {
+         url : "alimama.com"
+     }
+    window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params_1), "wvapi:123", "https://equity.tmall.com");
+
+    // var cookie_params_2 = {
+    //      url : "www.taobao.com"
+    //  }
+    // window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params_2), "wvapi:123", "https://equity.tmall.com");
+    // var cookie_params_3 = {
+    //      url : "www.shuqi.com"
+    //  }
+    // window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params_3), "wvapi:123", "https://equity.tmall.com");
+
+    document.getElementById('test').addEventListener('click', function() {
+    //   var call_param = {
+    //   "serviceId": "bone_runtime/BoneUserInfoService@123456",
+    //   "methodName": "getUserInfo", 
+    //   "args": []
+    // }
+    // window.__windvane__.nativeCall("BoneModel.callService", JSON.stringify(call_param), "wvapi:279871", "https://pages.tmall.com/wow/z/tmall-genine/nx-test-group/") 
+
+    // var get_param = {
+    //   "sdkName": "bone_runtime",
+    //   "minSDKVer": "*", 
+    //   "serviceName": "BoneUserInfoService",
+    // }
+    // // window.__windvane__.nativeCall("BoneModel.getService", JSON.stringify(get_param), "wvapi:279871", "https://pages.tmall.com/wow/z/tmall-genine/nx-test-group/")
+      
+    // window.__windvane__.nativeCall("AppModel.getUserInfo", "{}", "wvapi:279872", "https://pages.tmall.com/wow/z/tmall-genine/nx-test-group/j287z38td7dejbfjyie5?_ali_nav_bar_=false&_ali_trans_status_bar_=true&pageSource=fromfulizhongxin")
+    
+    // var cookie_params_1 = {
+    //       url : "freshhema.com"
+    //   }
+    //   window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params__1), "wvapi:123", "https://equity.tmall.com");
+
+    // var cookie_params_2 = {
+    //       url : "www.taobao.com"
+    //   }
+    //   window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params_2), "wvapi:123", "https://equity.tmall.com");
+
+      // var cookie_params_3 = {
+      //     url : "www.freshhema.com"
+      // }
+      // window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params__3), "wvapi:123", "https://equity.tmall.com");
+
+ 
+
+
+    //  var file_params = {
+    // "mode": "overwrite",
+    // "data": "123",
+    // "fileName": "test.txt",
+    // "share": true,
+    // }
+    // alert(window.__windvane__.nativeCall('WVFile.write', JSON.stringify(file_params), "wvapi:123", "https://tmallgenie.com"));
+
+
+
+
+
+    var jieping_params = {
+    inAlbum: true
+    };
+    window.__windvane__.nativeCall('WVScreen.capture', JSON.stringify(jieping_params), "wvapi:123", "https://tmallgenie.com");
+
+
+    var params = {
+          // 是否获取高精度的位置
+          enableHighAccuracy: true,
+          // 是否获取地址描述
+          address: true
+  };
+  window.__windvane__.nativeCall('WVLocation.getLocation', JSON.stringify(params), "wvapi:123", "https://equity.tmall.com");
+
+    });
+
+
+
+
+    // window.onload = function() {
+    //   if (window.__windvane__) {
+    //     //alert("test");
+    //     window.__windvane__.onSuccess = function(callbackFunction, data) {
+    //       alert("data " + JSON.stringify(data));
+    //     } 
+    //   }
+    // }
+  
+
+//   var params = {
+//         // 是否获取高精度的位置
+//         enableHighAccuracy: true,
+//         // 是否获取地址描述
+//         address: true
+// };
+
+// function successCallback(e) {
+//     alert('success:' + JSON.stringify(e));
+// }
+// function failureCallback(e) {
+//     alert('failure:' + JSON.stringify(e));
+// }
+// window.__windvane__.nativeCall('WVLocation.getLocation', JSON.stringify(params), "successCallback", "failureCallback");
+//  //window.__windvane__.nativeCall('WVLocation.requestLocation', JSON.stringify(params), "successCallback", "failureCallback");
+
+// // write file
+// var file_params = {
+//   "mode": "overwrite",
+//   "data": "123",
+//   "fileName": "test.txt",
+//   "share": true,
+// }
+// window.__windvane__.nativeCall('WVFile.write', JSON.stringify(file_params), "successCallback", "failureCallback");
+
+// // cookie
+// var cookie_params = {
+//   url : "www.youku.com"
+// }
+// window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "successCallback", "failureCallback");
+
+
+// jieping
+// var jieping_params = {
+//   inAlbum: true
+// };
+// window.__windvane__.nativeCall('WVScreen.capture', JSON.stringify(jieping_params), "successCallback", "failureCallback");
+
+
+
+
+// blue_tooth_params
+// var blue_tooth_params = {
+//   deviceId: "123",
+//   serviceId: "123",
+// }
+// window.__windvane__.nativeCall('WVBluetooth.writeValue', JSON.stringify(blue_tooth_params), "successCallback", "failureCallback");
+</script>
+
+</body>
+</html>
