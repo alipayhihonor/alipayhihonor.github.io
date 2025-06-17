@@ -1,0 +1,86 @@
+<html>
+<script>
+function initializeShader(gl, shaderType, sourceCode) {
+    const shader = gl.createShader(shaderType);
+    const source = sourceCode.trim();
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error("Shader compile error:", gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+    }
+    return shader;
+}
+
+function initializeProgram(gl, vertexShader, fragmentShader) {
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error("Program link error:", gl.getProgramInfoLog(program));
+        gl.deleteProgram(program);
+        return null;
+    }
+    return program;
+}
+
+function getShaderSource(id) {
+    const script = document.getElementById(id);
+    return script ? script.textContent : null;
+}
+</script>
+
+<script type="x-shader/x-vertex" id="vertex-shader">
+#version 300 es
+precision highp float;
+in vec4 pos;
+uniform vec4 u_vec;
+uniform ivec4 u_ivec;
+uniform mat4 u_mat;
+void main() {
+    gl_Position = (pos + u_vec) * u_mat[0];
+}
+</script>
+
+<script type="x-shader/x-fragment" id="fragment-shader">
+#version 300 es
+precision highp float;
+out vec4 fragColor;
+void main() {
+    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+</script>
+
+<script>
+function startRendering() {
+    const canvas = document.createElement("canvas");
+    document.body.appendChild(canvas);
+    
+    const gl = canvas.getContext("webgl2");
+    if (!gl) {
+        console.error("WebGL2 not supported");
+        return;
+    }
+    
+    const vertexShaderSource = getShaderSource("vertex-shader");
+    const fragmentShaderSource = getShaderSource("fragment-shader");
+    
+    const vertexShader = initializeShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = initializeShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    
+    const program = initializeProgram(gl, vertexShader, fragmentShader);
+    if (!program) {
+        return;
+    }
+    
+    gl.useProgram(program);
+    gl.drawArrays(gl.LINE_LOOP, 0x414141, 0x41414141);
+
+}
+</script>
+
+<body onload="startRendering()">
+</body>
+</html>
