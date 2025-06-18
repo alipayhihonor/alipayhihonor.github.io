@@ -1,3 +1,4 @@
+<script>
 // --sandbox-testing
 ///// wasm-module-builder.js START /////
 
@@ -2370,3 +2371,4 @@ let instance = builder.instantiate({import: {thrower, tag}});
 let {f} = instance.exports;
 
 console.log(f(0n).toString(16));
+</script>
