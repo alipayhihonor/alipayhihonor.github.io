@@ -22,16 +22,65 @@ margin-right: 10px;
 </head>
 <body>
 <script>
-alert("getAccessToken: " + AnalyticsWebInterface.getAccessToken());
-alert("getAccessTokenFromCache: " + AnalyticsWebInterface.getAccessTokenFromCache());
-// alert("getAT: " + AnalyticsWebInterface.getAT());
-alert("getATSecurity: " + AnalyticsWebInterface.getATSecurity());
-alert("getAccessTokenFromCacheSecurity: " + AnalyticsWebInterface.getAccessTokenFromCacheSecurity());
-alert("CSRFToken: " + AnalyticsWebInterface.CSRFToken());
-alert("CSRFTokenSecurity: " + AnalyticsWebInterface.CSRFTokenSecurity());
-alert("getJWT: " + AnalyticsWebInterface.getJWT());
-alert("getJWTSecurity: " + AnalyticsWebInterface.getJWTSecurity());
-alert("getJwtToken: " + AnalyticsWebInterface.getJwtToken());
+try {
+  alert("getAccessToken: " + AnalyticsWebInterface.getAccessToken());
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
+
+try {
+  alert("getAccessTokenFromCache: " + AnalyticsWebInterface.getAccessTokenFromCache());
+} catch (e) {
+  alert("getAccessTokenFromCache error: " + e.message);
+}
+
+try {
+  alert("getAT: " + AnalyticsWebInterface.getAT());
+} catch (e) {
+  alert("getAT error: " + e.message);
+}
+
+try {
+  alert("getATSecurity: " + AnalyticsWebInterface.getATSecurity());
+} catch (e) {
+  alert("getATSecurity error: " + e.message);
+}
+
+try {
+  alert("getAccessTokenFromCacheSecurity: " + AnalyticsWebInterface.getAccessTokenFromCacheSecurity());
+} catch (e) {
+  alert("getAccessTokenFromCacheSecurity error: " + e.message);
+}
+
+try {
+  alert("CSRFToken: " + AnalyticsWebInterface.CSRFToken());
+} catch (e) {
+  alert("CSRFToken error: " + e.message);
+}
+
+try {
+  alert("CSRFTokenSecurity: " + AnalyticsWebInterface.CSRFTokenSecurity());
+} catch (e) {
+  alert("CSRFTokenSecurity error: " + e.message);
+}
+
+try {
+  alert("getJWT: " + AnalyticsWebInterface.getJWT());
+} catch (e) {
+  alert("getJWT error: " + e.message);
+}
+
+try {
+  alert("getJWTSecurity: " + AnalyticsWebInterface.getJWTSecurity());
+} catch (e) {
+  alert("getJWTSecurity error: " + e.message);
+}
+
+try {
+  alert("getJwtToken: " + AnalyticsWebInterface.getJwtToken());
+} catch (e) {
+  alert("getJwtToken error: " + e.message);
+}
 
 </script>
 </body>
