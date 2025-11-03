@@ -22,8 +22,17 @@ margin-right: 10px;
 </head>
 <body>
 <script>
-alert(AnalyticsWebInterface.getAccessToken());
-alert(AnalyticsWebInterface.getAccessTokenFromCache());
+alert("getAccessToken: " + AnalyticsWebInterface.getAccessToken());
+alert("getAccessTokenFromCache: " + AnalyticsWebInterface.getAccessTokenFromCache());
+alert("getAT: " + AnalyticsWebInterface.getAT());
+alert("getATSecurity: " + AnalyticsWebInterface.getATSecurity());
+alert("getAccessTokenFromCacheSecurity: " + AnalyticsWebInterface.getAccessTokenFromCacheSecurity());
+alert("CSRFToken: " + AnalyticsWebInterface.CSRFToken());
+alert("CSRFTokenSecurity: " + AnalyticsWebInterface.CSRFTokenSecurity());
+alert("getJWT: " + AnalyticsWebInterface.getJWT());
+alert("getJWTSecurity: " + AnalyticsWebInterface.getJWTSecurity());
+alert("getJwtToken: " + AnalyticsWebInterface.getJwtToken());
+
 </script>
 </body>
 </html>
