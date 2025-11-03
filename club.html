@@ -23,78 +23,95 @@ margin-right: 10px;
 <body>
 <script>
 
-try {
-  alert("getAccessToken: " + AnalyticsWebInterface.login());
-} catch (e) {
-  alert("getAccessToken error: " + e.message);
-}
+// try {
+//   alert("getAccessToken: " + AnalyticsWebInterface.login());
+// } catch (e) {
+//   alert("getAccessToken error: " + e.message);
+// }
   
-try {
-  alert("getAccessToken: " + AnalyticsWebInterface.getAccessToken());
+// try {
+//   alert("getAccessToken: " + AnalyticsWebInterface.getAccessToken());
+// } catch (e) {
+//   alert("getAccessToken error: " + e.message);
+// }
+
+// try {
+//   alert("getAccessTokenFromCache: " + AnalyticsWebInterface.getAccessTokenFromCache());
+// } catch (e) {
+//   alert("getAccessTokenFromCache error: " + e.message);
+// }
+
+// try {
+//   alert("getAT: " + AnalyticsWebInterface.getAT(0));
+// } catch (e) {
+//   alert("getAT error: " + e.message);
+// }
+
+// try {
+//   alert("getATSecurity: " + AnalyticsWebInterface.getATSecurity());
+// } catch (e) {
+//   alert("getATSecurity error: " + e.message);
+// }
+
+// try {
+//   alert("getAccessTokenFromCacheSecurity: " + AnalyticsWebInterface.getAccessTokenFromCacheSecurity());
+// } catch (e) {
+//   alert("getAccessTokenFromCacheSecurity error: " + e.message);
+// }
+
+// try {
+//   alert("CSRFToken: " + AnalyticsWebInterface.CSRFToken);
+// } catch (e) {
+//   alert("CSRFToken error: " + e.message);
+// }
+
+// try {
+//   alert("CSRFTokenSecurity: " + AnalyticsWebInterface.CSRFTokenSecurity);
+// } catch (e) {
+//   alert("CSRFTokenSecurity error: " + e.message);
+// }
+
+// try {
+//   alert("getJWT: " + AnalyticsWebInterface.getJWT());
+// } catch (e) {
+//   alert("getJWT error: " + e.message);
+// }
+
+// try {
+//   alert("getJWTSecurity: " + AnalyticsWebInterface.getJWTSecurity());
+// } catch (e) {
+//   alert("getJWTSecurity error: " + e.message);
+// }
+
+// try {
+//   alert("getJwtToken: " + AnalyticsWebInterface.getJwtToken());
+// } catch (e) {
+//   alert("getJwtToken error: " + e.message);
+// }
+
+//   try {
+//   alert("getJwtToken: " + AnalyticsWebInterface.getBindDeviceSN());
+// } catch (e) {
+//   alert("getJwtToken error: " + e.message);
+// }
+
+    try {
+  alert("getAT 0: " + MHJsInterface.MHJsInterface("0"));
 } catch (e) {
-  alert("getAccessToken error: " + e.message);
+  alert("getAT 0:  error: " + e.message);
 }
 
-try {
-  alert("getAccessTokenFromCache: " + AnalyticsWebInterface.getAccessTokenFromCache());
+      try {
+  alert("getAT 1: " + MHJsInterface.MHJsInterface("1"));
 } catch (e) {
-  alert("getAccessTokenFromCache error: " + e.message);
+  alert("getAT 1:  error: " + e.message);
 }
 
-try {
-  alert("getAT: " + AnalyticsWebInterface.getAT(0));
+      try {
+  alert("getAT 2: " + MHJsInterface.MHJsInterface("2"));
 } catch (e) {
-  alert("getAT error: " + e.message);
+  alert("getAT 2:  error: " + e.message);
 }
-
-try {
-  alert("getATSecurity: " + AnalyticsWebInterface.getATSecurity());
-} catch (e) {
-  alert("getATSecurity error: " + e.message);
-}
-
-try {
-  alert("getAccessTokenFromCacheSecurity: " + AnalyticsWebInterface.getAccessTokenFromCacheSecurity());
-} catch (e) {
-  alert("getAccessTokenFromCacheSecurity error: " + e.message);
-}
-
-try {
-  alert("CSRFToken: " + AnalyticsWebInterface.CSRFToken);
-} catch (e) {
-  alert("CSRFToken error: " + e.message);
-}
-
-try {
-  alert("CSRFTokenSecurity: " + AnalyticsWebInterface.CSRFTokenSecurity);
-} catch (e) {
-  alert("CSRFTokenSecurity error: " + e.message);
-}
-
-try {
-  alert("getJWT: " + AnalyticsWebInterface.getJWT());
-} catch (e) {
-  alert("getJWT error: " + e.message);
-}
-
-try {
-  alert("getJWTSecurity: " + AnalyticsWebInterface.getJWTSecurity());
-} catch (e) {
-  alert("getJWTSecurity error: " + e.message);
-}
-
-try {
-  alert("getJwtToken: " + AnalyticsWebInterface.getJwtToken());
-} catch (e) {
-  alert("getJwtToken error: " + e.message);
-}
-
-  try {
-  alert("getJwtToken: " + AnalyticsWebInterface.getBindDeviceSN());
-} catch (e) {
-  alert("getJwtToken error: " + e.message);
-}
-
 </script>
 </body>
 </html>
