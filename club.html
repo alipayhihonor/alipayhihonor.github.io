@@ -115,6 +115,12 @@ margin-right: 10px;
   alert("getAT 2:  error: " + e.message);
 }
 
+        try {
+  alert("getAT 3: " + MHJsInterface.getAT("3"));
+} catch (e) {
+  alert("getAT 3:  error: " + e.message);
+}
+
   try {
   alert("getAccessTokenFromCache: " + MHJsInterface.getAccessTokenFromCache());
 } catch (e) {
