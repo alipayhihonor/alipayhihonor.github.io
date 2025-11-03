@@ -135,7 +135,13 @@ margin-right: 10px;
 } catch (e) {
   alert("getDeviceSN() error: " + e.message);
 }
+
   
+      try {
+  alert("getJWT() " + MHJsInterface.getJWT());
+} catch (e) {
+  alert("getJWT() error: " + e.message);
+}
 </script>
 </body>
 </html>
