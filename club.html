@@ -166,9 +166,23 @@ margin-right: 10px;
   
 
             try {
-  alert("  isApkInstall " + MHJsInterface.isApkInstall("com.tencent.tmgp.sgame"));
+  alert("  isApkInstall com.tencent.tmgp.sgame" + MHJsInterface.isApkInstall("com.tencent.tmgp.sgame"));
 } catch (e) {
-  alert("  isApkInstall error: " + e.message);
+  alert("  isApkInstall com.tencent.tmgp.sgame error: " + e.message);
+}
+
+              try {
+  alert("  isApkInstall com.huawei.phoneservice" + MHJsInterface.isApkInstall("com.huawei.phoneservice"));
+} catch (e) {
+  alert("  isApkInstall com.huawei.phoneservice error: " + e.message);
+}
+
+  
+
+            try {
+  alert("getScanSN " + MHJsInterface.getScanSN("arg1", "arg2"));
+} catch (e) {
+  alert("getScanSN error: " + e.message);
 }
 
 </script>
