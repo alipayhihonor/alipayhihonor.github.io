@@ -163,6 +163,14 @@ margin-right: 10px;
   alert("  goDownloadAppFromMarket error: " + e.message);
 }
 
+  
+
+            try {
+  alert("  isApkInstall " + MHJsInterface.isApkInstall("com.tencent.tmgp.sgame"));
+} catch (e) {
+  alert("  isApkInstall error: " + e.message);
+}
+
 </script>
 </body>
 </html>
