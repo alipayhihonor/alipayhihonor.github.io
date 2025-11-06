@@ -1,0 +1,84 @@
+<!-- Enhanced HTML with CDP trace and memory layout placeholders for Chromium Bug Submission -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chrome Exploitation PoC – Memory Diff & CDP Trace Enhanced</title>
+  <style>
+    body { background-color: #111; color: #0f0; font-family: monospace; padding: 20px; }
+    .section { margin-bottom: 20px; padding: 15px; border: 1px solid #0f0; border-radius: 8px; background-color: #1b1b1b; }
+    h1, h2 { color: #00ff41; }
+    button { padding: 10px 20px; margin-top: 10px; background: #00ff41; color: #000; border: none; border-radius: 5px; cursor: pointer; }
+    pre { background: #000; padding: 10px; overflow-x: auto; color: #00ff41; }
+  </style>
+</head>
+<body>
+  <h1>🔬 Chrome V8 Vulnerability Simulation (with Memory Layout Diff + CDP Trace)</h1>
+
+  <div class="section">
+    <h2>Memory Layout Before vs After (Diff Simulation)</h2>
+    <button onclick="simulateMemoryDiff()">Simulate Layout Diff</button>
+    <pre id="memoryDiffLog"></pre>
+  </div>
+
+  <div class="section">
+    <h2>DevTools Protocol Trace Simulation</h2>
+    <p>This simulates how you might record a layout shift or object shape divergence using Chrome DevTools Protocol (CDP).</p>
+    <button onclick="simulateCDPTrace()">Generate Simulated CDP Trace</button>
+    <pre id="cdpTraceOutput"></pre>
+  </div>
+
+  <div class="section">
+    <h2>PoC Summary for Chromium Submission</h2>
+    <pre>
+🧪 Educational PoC demonstrating simulated type confusion, heap layout divergence, and use-after-free patterns in V8 engine:
+
+• simulateMemoryDiff(): visualizes property-level memory changes and gaps (deallocation).
+• simulateCDPTrace(): logs shape transitions and heap buffer manipulations as a simulated trace.
+• Safe for testing – no actual memory corruption or escape.
+• Use for training, security research demonstrations, or DevTools inspection learning.
+    </pre>
+  </div>
+
+<script>
+function simulateMemoryDiff() {
+  const before = { a: 1, b: 2, c: 3 };
+  const after = { a: 1, c: 33, d: 4 };
+  const log = [];
+
+  log.push("Before State:");
+  Object.entries(before).forEach(([k, v]) => log.push(`  ${k}: ${v}`));
+
+  log.push("\nAfter State:");
+  Object.entries(after).forEach(([k, v]) => log.push(`  ${k}: ${v}`));
+
+  log.push("\nLayout Diffs:");
+  for (let key in before) {
+    if (!(key in after)) log.push(`  - Deleted: ${key}`);
+    else if (before[key] !== after[key]) log.push(`  - Modified: ${key} → ${after[key]}`);
+  }
+  for (let key in after) {
+    if (!(key in before)) log.push(`  + Added: ${key} = ${after[key]}`);
+  }
+
+  document.getElementById("memoryDiffLog").textContent = log.join("\n");
+}
+
+function simulateCDPTrace() {
+  const trace = {
+    timestamp: Date.now(),
+    objectShapes: [
+      { id: 1, props: ["a", "b", "c"], layout: "packed" },
+      { id: 2, props: ["a", "c", "d"], layout: "sparse" }
+    ],
+    bufferWrites: [
+      { offset: 0, value: "0xdeadbeef" },
+      { offset: 4, value: "0x41414141" }
+    ]
+  };
+  document.getElementById("cdpTraceOutput").textContent = JSON.stringify(trace, null, 2);
+}
+</script>
+</body>
+</html>

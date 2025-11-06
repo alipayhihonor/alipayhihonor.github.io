@@ -1,0 +1,148 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebGPU Life</title>
+  </head>
+  <body>
+    <div id="content0">THIS SHOULD BE REPLACED IF ALL AS EXPECTED 0</div>
+    <div id="content1">THIS SHOULD BE REPLACED IF ALL AS EXPECTED 1</div>
+    <div id="content2">THIS SHOULD BE REPLACED IF ALL AS EXPECTED 2</div>
+    <div id="content3">THIS SHOULD BE REPLACED IF ALL AS EXPECTED 3</div>
+    <div id="content4">THIS SHOULD BE REPLACED IF ALL AS EXPECTED 4</div>
+
+    <canvas width="512" height="512"></canvas>
+    <script type="module">
+      const canvas = document.querySelector("canvas");
+      if (!navigator.gpu) {
+	  document.getElementById("content0").innerHTML = "webgpu not supported";
+          throw new Error("WebGPU not supported on this browser.");
+      }
+      document.getElementById("content0").innerHTML = "webgpu found";
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) {
+	document.getElementById("content1").innerHTML = "No appropriate GPUAdapter found";
+        throw new Error("No appropriate GPUAdapter found.");
+      }
+      document.getElementById("content1").innerHTML = "" + adapter;
+      const device = await adapter.requestDevice();
+      document.getElementById("content2").innerHTML = "" + device;
+      const module = device.createShaderModule({
+          label: 'label',
+          code: `
+          var<private> g: vec4<f32>;
+          var<private> g_1: vec4<f32>;
+          
+          fn f() {
+              var l_1: i32;
+              var l_2: bool;
+              var l_3: vec2<f32>;
+          
+              loop {
+                  loop {
+                      if (l_1 != 0i) {
+                      } else {
+                          break;
+                      }
+                      if (g.y < 14560776000000000013f) {
+                          if (g.x > 14560776000000000000f) {
+                              continue;
+                          } 
+                      }
+                      l_2 = (l_3.y < 0.25f);
+                      l_1 = 0i;
+                      loop {
+                          if (l_1 >= 1i) {
+                              break;
+                          }
+                          g = vec4<f32>();
+                          return;
+                      }
+                      if l_2 {
+                          return;
+                      }
+                  }
+              }
+          }
+          
+          @fragment 
+          fn frag_main() -> @location(0) vec4<f32> {
+              f();
+              return g_1;
+          }
+
+          @vertex
+          fn vs_main(@builtin(vertex_index) a: u32) -> @builtin(position) vec4<f32> {
+              return vec4<f32>(0.0, 0.0, 0.0, 0.0);
+          }
+          `,
+      });
+
+      const pipeline = device.createRenderPipeline({
+          label: 'render pipeline',
+          layout: 'auto',
+          vertex: {
+              module: module,
+              entryPoint: "vs_main",
+          },
+          fragment: {
+              module: module,
+              entryPoint: "frag_main",
+              targets: [
+                {
+                    format: navigator.gpu.getPreferredCanvasFormat(),
+                },
+              ],
+          },
+      });
+      document.getElementById("content3").innerHTML = "" + pipeline;
+
+      const context = canvas.getContext("webgpu");
+      context.configure({
+        device: device,
+        format: navigator.gpu.getPreferredCanvasFormat(),
+        alphaMode: "premultiplied",
+      });
+
+      const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
+      const renderPassDescriptor = {
+          colorAttachments: [
+            {
+              clearValue: clearColor,
+              loadOp: "clear",
+              storeOp: "store",
+              view: context.getCurrentTexture().createView(),
+            },
+          ],
+      };
+
+      //let usage = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_SRC;
+      //const workgroupBuffer = device.createBuffer({size: 4, usage: usage});
+      //const bindGroup = device.createBindGroup({
+      //    layout: pipeline.getBindGroupLayout(0),
+      //    entries: [
+      //      //{ binding: 0, resource: { buffer: workgroupBuffer }},
+      //    ],
+      //});
+
+      const encoder = device.createCommandEncoder({
+        label: 'encoder',
+      });
+
+      const passEncoder = encoder.beginRenderPass(renderPassDescriptor);
+
+      passEncoder.setPipeline(pipeline);
+      //passEncoder.setVertexBuffer(0, vertexBuffer);
+      passEncoder.draw(4);
+      
+      // End the render pass
+      passEncoder.end();
+      
+      // End frame by passing array of command buffers to command queue for execution
+      device.queue.submit([encoder.finish()]);
+
+      document.getElementById("content4").innerHTML = "all done no exception";
+    </script>
+  </body>
+</html>

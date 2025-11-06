@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Chrome Exploitation Research Guide</title>
+    <style>
+        body { 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            margin: 0; 
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41; 
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            padding: 30px; 
+        }
+        .header {
+            text-align: center;
+            border: 3px solid #ff0040;
+            padding: 40px;
+            margin-bottom: 40px;
+            background: rgba(255, 0, 64, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 0, 64, 0.3);
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 0 0 20px #ff0040;
+        }
+        .research-section {
+            margin: 40px 0;
+            padding: 30px;
+            border: 2px solid #ff6600;
+            border-radius: 12px;
+            background: rgba(255, 102, 0, 0.05);
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.2);
+        }
+        .exploit-button {
+            background: linear-gradient(45deg, #ff0040, #ff6600);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 0, 64, 0.3);
+        }
+        .exploit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 64, 0.5);
+        }
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            color: #00ff41;
+        }
+        .warning {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            color: #ff4444;
+        }
+        .technique-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .technique-card {
+            border: 2px solid #00ff41;
+            border-radius: 12px;
+            padding: 25px;
+            background: rgba(0, 255, 65, 0.05);
+            transition: all 0.3s;
+        }
+        .technique-card:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.3);
+            transform: translateY(-5px);
+        }
+        .output-area {
+            background: #000;
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            min-height: 100px;
+            font-family: monospace;
+            color: #00ff41;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 ADVANCED CHROME EXPLOITATION RESEARCH GUIDE 🔥</h1>
+            <p>Comprehensive Zero-Day Research & Advanced Browser Exploitation Techniques</p>
+        </div>
+
+        <div class="warning">
+            <h2>⚠️ RESEARCH DISCLAIMER ⚠️</h2>
+            <p>This guide is for educational and authorized security research purposes only. Unauthorized exploitation of vulnerabilities is illegal and unethical.</p>
+        </div>
+
+        <div class="research-section">
+            <h2>🎯 Advanced Exploitation Techniques</h2>
+            <div class="technique-grid">
+                <div class="technique-card">
+                    <h3>Type Confusion Exploitation</h3>
+                    <p>Advanced type confusion techniques targeting V8 engine type system vulnerabilities.</p>
+                    <button class="exploit-button" onclick="typeConfusion()">Execute Type Confusion</button>
+                    <div id="typeOutput" class="output-area"></div>
+                </div>
+
+                <div class="technique-card">
+                    <h3>ArrayBuffer Memory Corruption</h3>
+                    <p>Memory corruption through ArrayBuffer manipulation and bounds checking bypass.</p>
+                    <button class="exploit-button" onclick="arrayBufferExploit()">Execute ArrayBuffer Exploit</button>
+                    <div id="arrayOutput" class="output-area"></div>
+                </div>
+
+                <div class="technique-card">
+                    <h3>JIT Optimization Breaking</h3>
+                    <p>Breaking JIT compiler optimizations to achieve code execution.</p>
+                    <button class="exploit-button" onclick="jitExploit()">Execute JIT Exploit</button>
+                    <div id="jitOutput" class="output-area"></div>
+                </div>
+
+                <div class="technique-card">
+                    <h3>V8 Engine Deep Dive</h3>
+                    <p>Advanced V8 internals exploitation and heap manipulation techniques.</p>
+                    <button class="exploit-button" onclick="v8DeepDive()">Execute V8 Exploit</button>
+                    <div id="v8Output" class="output-area"></div>
+                </div>
+
+                <div class="technique-card">
+                    <h3>Advanced Fuzzing Methods</h3>
+                    <p>Sophisticated fuzzing techniques for discovering new vulnerabilities.</p>
+                    <button class="exploit-button" onclick="advancedFuzzing()">Execute Fuzzing</button>
+                    <div id="fuzzOutput" class="output-area"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="research-section">
+            <h2>📚 Technical Implementation Details</h2>
+            <!-- These code blocks are for display only. The actual functions are in the script tag below. -->
+            <h3>1. Type Confusion Attack Vector</h3>
+            <div class="code-block">
+// Type confusion exploitation framework
+function createTypeConfusion() {
+    const obj = {};
+    obj.__proto__ = Array.prototype;
+    obj.length = 0x41414141; // Attempt to set a large length, might cause issues
+    return obj;
+}
+
+// Advanced type confusion with heap manipulation
+function advancedTypeConfusion() {
+    const buffer = new ArrayBuffer(0x1000);
+    const view = new DataView(buffer);
+    
+    // Corrupt type information (illustrative, not functional without specific vulnerability)
+    for (let i = 0; i < 0x100; i++) {
+        view.setUint32(i * 4, 0x41414141);
+    }
+    
+    return buffer;
+}
+            </div>
+
+            <h3>2. ArrayBuffer Memory Corruption</h3>
+            <div class="code-block">
+// ArrayBuffer bounds bypass technique
+function createCorruptedArrayBuffer() {
+    const buffer = new ArrayBuffer(0x1000);
+    const uint32Array = new Uint32Array(buffer);
+    
+    // Overflow buffer bounds (will typically throw an error in modern JS engines)
+    try {
+        for (let i = 0; i < 0x2000; i++) {
+            uint32Array[i] = 0xdeadbeef;
+        }
+    } catch (e) {
+        // This catch block demonstrates that direct bounds overflow is usually prevented
+        console.log("Bounds check triggered:", e.message);
+        return "Bounds check triggered (expected): " + e.message;
+    }
+    
+    return buffer;
+}
+
+// Advanced heap manipulation (illustrative, not functional without specific vulnerability)
+function heapManipulation() {
+    const buffers = [];
+    for (let i = 0; i < 1000; i++) {
+        buffers.push(new ArrayBuffer(0x1000));
+    }
+    
+    // Create heap holes (illustrative of a technique, not a direct exploit)
+    for (let i = 0; i < buffers.length; i += 2) {
+        buffers[i] = null;
+    }
+    
+    return buffers;
+}
+            </div>
+
+            <h3>3. JIT Compiler Exploitation</h3>
+            <div class="code-block">
+// JIT optimization breaking
+function jitOptimizationBreaker() {
+    function hotFunction(x) {
+        if (x > 0) {
+            return x * 2;
+        }
+        return x + 1;
+    }
+    
+    // Warm up JIT
+    for (let i = 0; i < 10000; i++) {
+        hotFunction(i);
+    }
+    
+    // Break optimization assumptions (illustrative, modern JITs are robust)
+    hotFunction("string");
+    hotFunction({});
+    hotFunction([]);
+    
+    return hotFunction;
+}
+
+// Advanced JIT manipulation (illustrative, modern JITs are robust)
+function jitDeoptimization() {
+    const obj = { x: 1, y: 2 };
+    
+    function accessProperty(o) {
+        return o.x + o.y;
+    }
+    
+    // Optimize for specific shape
+    for (let i = 0; i < 10000; i++) {
+        accessProperty(obj);
+    }
+    
+    // Change object shape to trigger deoptimization
+    obj.z = 3;
+    delete obj.x;
+    
+    return accessProperty(obj); // This will likely result in NaN or an error due to missing 'x'
+}
+            </div>
+
+            <h3>4. V8 Engine Internals</h3>
+            <div class="code-block">
+// V8 heap manipulation techniques (illustrative, not functional without specific vulnerability)
+function v8HeapExploit() {
+    const objects = [];
+    
+    // Create objects with specific layouts
+    for (let i = 0; i < 1000; i++) {
+        objects.push({
+            prop1: i,
+            prop2: i * 2,
+            prop3: "string_" + i,
+            prop4: [i, i + 1, i + 2]
+        });
+    }
+    
+    // Trigger garbage collection patterns (gc() is not typically exposed in browsers)
+    if (typeof gc === 'function') {
+        gc();
+        return "Objects created and gc() called (if available). Check console for details.";
+    } else {
+        return "Objects created. gc() not available in this environment. Check console for details.";
+    }
+}
+
+// Advanced object layout manipulation (illustrative, not functional without specific vulnerability)
+function objectLayoutManipulation() {
+    function Constructor() {
+        this.a = 1;
+        this.b = 2;
+        this.c = 3;
+    }
+    
+    const instances = [];
+    for (let i = 0; i < 1000; i++) {
+        const obj = new Constructor();
+        
+        // Modify object layout
+        if (i % 2 === 0) {
+            obj.d = 4;
+        } else {
+            delete obj.b;
+        }
+        
+        instances.push(obj);
+    }
+    
+    return instances;
+}
+            </div>
+
+            <h3>5. Advanced Fuzzing Framework</h3>
+            <div class="code-block">
+// Intelligent fuzzing engine
+function createFuzzingFramework() {
+    const fuzzData = {
+        strings: ["", "A".repeat(1000), "\\x41\\x42\\x43", "%s%s%s", "long_string_with_various_characters_!@#$%^&*()_+=-{}[]|:;'<>?,./`~"],
+        numbers: [0, -1, 0x7fffffff, 0x80000000, NaN, Infinity, Number.MIN_VALUE, Number.MAX_VALUE],
+        objects: [{}, [], null, undefined, new Date(), new RegExp("a", "g")],
+        functions: [function(){}, () => {}, async function(){}, Math.sin],
+        arrays: [[], [1,2,3], [null, undefined, "test"]]
+    };
+    
+    return fuzzData;
+}
+
+// Mutation-based fuzzing
+function mutationFuzzer(input) {
+    if (typeof input !== 'string' && !(input instanceof Uint8Array)) {
+        // For demonstration, convert non-string/Uint8Array to string representation
+        input = JSON.stringify(input);
+    }
+
+    const inputBytes = new TextEncoder().encode(input); // Convert string to bytes for byte-level mutation
+    const mutations = [];
+    
+    // Bit flipping (simplified for demonstration)
+    for (let i = 0; i < inputBytes.length; i++) {
+        const mutatedBytes = new Uint8Array(inputBytes);
+        mutatedBytes[i] ^= 0x01; // Flip one bit
+        mutations.push(new TextDecoder().decode(mutatedBytes));
+    }
+    
+    // Byte insertion
+    for (let i = 0; i <= inputBytes.length; i++) {
+        const mutatedBytes = new Uint8Array(inputBytes.length + 1);
+        mutatedBytes.set(inputBytes.slice(0, i), 0);
+        mutatedBytes[i] = Math.floor(Math.random() * 256); // Insert random byte
+        mutatedBytes.set(inputBytes.slice(i), i + 1);
+        mutations.push(new TextDecoder().decode(mutatedBytes));
+    }
+    
+    // Byte deletion
+    if (inputBytes.length > 0) {
+        for (let i = 0; i < inputBytes.length; i++) {
+            const mutatedBytes = new Uint8Array(inputBytes.length - 1);
+            mutatedBytes.set(inputBytes.slice(0, i), 0);
+            mutatedBytes.set(inputBytes.slice(i + 1), i);
+            mutations.push(new TextDecoder().decode(mutatedBytes));
+        }
+    }
+
+    // Return a subset for brevity
+    return mutations.slice(0, 10); 
+}
+            </div>
+        </div>
+
+        <div class="research-section">
+            <h2>🔬 Research Methodology</h2>
+            <div class="technique-grid">
+                <div class="technique-card">
+                    <h3>Static Analysis</h3>
+                    <p>Code review and vulnerability pattern identification</p>
+                    <ul>
+                        <li>Source code auditing</li>
+                        <li>Binary analysis</li>
+                        <li>Control flow analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="technique-card">
+                    <h3>Dynamic Analysis</h3>
+                    <p>Runtime analysis of program behavior and memory access.</p>
+                    <ul>
+                        <li>Debugger attachment</li>
+                        <li>Memory sanitizers (ASan, MSan, etc.)</li>
+                        <li>Tracing and logging</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Helper function to update the output area.
+         * @param {string} elementId - The ID of the HTML element to update.
+         * @param {any} content - The content to display.
+         */
+        function updateOutput(elementId, content) {
+            const outputElement = document.getElementById(elementId);
+            if (outputElement) {
+                // Safely display content, converting objects to JSON strings
+                if (typeof content === 'object' && content !== null) {
+                    outputElement.innerText = JSON.stringify(content, null, 2);
+                } else {
+                    outputElement.innerText = String(content);
+                }
+                outputElement.scrollTop = outputElement.scrollHeight; // Scroll to bottom
+            }
+        }
+
+        // --- Technical Implementation Details (Moved from code-block divs) ---
+
+        // 1. Type Confusion Attack Vector
+        function createTypeConfusion() {
+            const obj = {};
+            obj.__proto__ = Array.prototype;
+            obj.length = 0x41414141; // Attempt to set a large length, might cause issues
+            return obj;
+        }
+
+        function advancedTypeConfusion() {
+            const buffer = new ArrayBuffer(0x1000);
+            const view = new DataView(buffer);
+            
+            for (let i = 0; i < 0x100; i++) {
+                view.setUint32(i * 4, 0x41414141);
+            }
+            
+            return buffer;
+        }
+
+        // 2. ArrayBuffer Memory Corruption
+        function createCorruptedArrayBuffer() {
+            const buffer = new ArrayBuffer(0x1000);
+            const uint32Array = new Uint32Array(buffer);
+            
+            try {
+                for (let i = 0; i < 0x2000; i++) {
+                    uint32Array[i] = 0xdeadbeef;
+                }
+            } catch (e) {
+                console.log("Bounds check triggered (expected):", e.message);
+                return "Bounds check triggered (expected): " + e.message;
+            }
+            
+            return buffer;
+        }
+
+        function heapManipulation() {
+            const buffers = [];
+            for (let i = 0; i < 1000; i++) {
+                buffers.push(new ArrayBuffer(0x1000));
+            }
+            
+            for (let i = 0; i < buffers.length; i += 2) {
+                buffers[i] = null;
+            }
+            
+            return buffers;
+        }
+
+        // 3. JIT Compiler Exploitation
+        function jitOptimizationBreaker() {
+            function hotFunction(x) {
+                if (x > 0) {
+                    return x * 2;
+                }
+                return x + 1;
+            }
+            
+            for (let i = 0; i < 10000; i++) {
+                hotFunction(i);
+            }
+            
+            hotFunction("string");
+            hotFunction({});
+            hotFunction([]);
+            
+            return hotFunction;
+        }
+
+        function jitDeoptimization() {
+            const obj = { x: 1, y: 2 };
+            
+            function accessProperty(o) {
+                return o.x + o.y;
+            }
+            
+            for (let i = 0; i < 10000; i++) {
+                accessProperty(obj);
+            }
+            
+            obj.z = 3;
+            delete obj.x;
+            
+            return accessProperty(obj);
+        }
+
+        // 4. V8 Engine Internals
+        function v8HeapExploit() {
+            const objects = [];
+            
+            for (let i = 0; i < 1000; i++) {
+                objects.push({
+                    prop1: i,
+                    prop2: i * 2,
+                    prop3: "string_" + i,
+                    prop4: [i, i + 1, i + 2]
+                });
+            }
+            
+            if (typeof gc === 'function') {
+                gc();
+                return "Objects created and gc() called (if available). Check console for details.";
+            } else {
+                return "Objects created. gc() not available in this environment. Check console for details.";
+            }
+        }
+
+        function objectLayoutManipulation() {
+            function Constructor() {
+                this.a = 1;
+                this.b = 2;
+                this.c = 3;
+            }
+            
+            const instances = [];
+            for (let i = 0; i < 1000; i++) {
+                const obj = new Constructor();
+                
+                if (i % 2 === 0) {
+                    obj.d = 4;
+                } else {
+                    delete obj.b;
+                }
+                
+                instances.push(obj);
+            }
+            
+            return instances;
+        }
+
+        // 5. Advanced Fuzzing Framework
+        function createFuzzingFramework() {
+            const fuzzData = {
+                strings: ["", "A".repeat(1000), "\\x41\\x42\\x43", "%s%s%s", "long_string_with_various_characters_!@#$%^&*()_+=-{}[]|:;'<>?,./`~"],
+                numbers: [0, -1, 0x7fffffff, 0x80000000, NaN, Infinity, Number.MIN_VALUE, Number.MAX_VALUE],
+                objects: [{}, [], null, undefined, new Date(), new RegExp("a", "g")],
+                functions: [function(){}, () => {}, async function(){}, Math.sin],
+                arrays: [[], [1,2,3], [null, undefined, "test"]]
+            };
+            
+            return fuzzData;
+        }
+
+        function mutationFuzzer(input) {
+            if (typeof input !== 'string' && !(input instanceof Uint8Array)) {
+                input = JSON.stringify(input);
+            }
+
+            const inputBytes = new TextEncoder().encode(input);
+            const mutations = [];
+            
+            for (let i = 0; i < inputBytes.length; i++) {
+                const mutatedBytes = new Uint8Array(inputBytes);
+                mutatedBytes[i] ^= 0x01;
+                mutations.push(new TextDecoder().decode(mutatedBytes));
+            }
+            
+            for (let i = 0; i <= inputBytes.length; i++) {
+                const mutatedBytes = new Uint8Array(inputBytes.length + 1);
+                mutatedBytes.set(inputBytes.slice(0, i), 0);
+                mutatedBytes[i] = Math.floor(Math.random() * 256);
+                mutatedBytes.set(inputBytes.slice(i), i + 1);
+                mutations.push(new TextDecoder().decode(mutatedBytes));
+            }
+            
+            if (inputBytes.length > 0) {
+                for (let i = 0; i < inputBytes.length; i++) {
+                    const mutatedBytes = new Uint8Array(inputBytes.length - 1);
+                    mutatedBytes.set(inputBytes.slice(0, i), 0);
+                    mutatedBytes.set(inputBytes.slice(i + 1), i);
+                    mutations.push(new TextDecoder().decode(mutatedBytes));
+                }
+            }
+
+            return mutations.slice(0, 10); 
+        }
+
+        // --- Main exploitation functions (called by buttons) ---
+
+        /**
+         * Executes Type Confusion exploitation techniques.
+         * Calls createTypeConfusion and advancedTypeConfusion and displays results.
+         */
+        function typeConfusion() {
+            const outputId = 'typeOutput';
+            updateOutput(outputId, "Executing Type Confusion techniques...");
+            try {
+                const result1 = createTypeConfusion();
+                updateOutput(outputId, "createTypeConfusion result: " + JSON.stringify(result1) + "\n\n");
+                
+                const result2 = advancedTypeConfusion();
+                updateOutput(outputId, document.getElementById(outputId).innerText + "advancedTypeConfusion result: " + JSON.stringify(result2));
+                console.log("Type Confusion results:", { result1, result2 });
+            } catch (e) {
+                updateOutput(outputId, "Error during Type Confusion: " + e.message);
+                console.error("Type Confusion error:", e);
+            }
+        }
+
+        /**
+         * Executes ArrayBuffer Memory Corruption techniques.
+         * Calls createCorruptedArrayBuffer and heapManipulation and displays results.
+         */
+        function arrayBufferExploit() {
+            const outputId = 'arrayOutput';
+            updateOutput(outputId, "Executing ArrayBuffer Memory Corruption techniques...");
+            try {
+                const result1 = createCorruptedArrayBuffer();
+                updateOutput(outputId, "createCorruptedArrayBuffer result: " + result1 + "\n\n");
+                
+                const result2 = heapManipulation();
+                updateOutput(outputId, document.getElementById(outputId).innerText + "heapManipulation result (first 5 buffers): " + JSON.stringify(result2.slice(0, 5).map(b => b ? b.byteLength : null)));
+                console.log("ArrayBuffer Exploit results:", { result1, result2 });
+            } catch (e) {
+                updateOutput(outputId, "Error during ArrayBuffer Exploit: " + e.message);
+                console.error("ArrayBuffer Exploit error:", e);
+            }
+        }
+
+        /**
+         * Executes JIT Optimization Breaking techniques.
+         * Calls jitOptimizationBreaker and jitDeoptimization and displays results.
+         */
+        function jitExploit() {
+            const outputId = 'jitOutput';
+            updateOutput(outputId, "Executing JIT Optimization Breaking techniques...");
+            try {
+                const hotFunc = jitOptimizationBreaker();
+                updateOutput(outputId, "jitOptimizationBreaker: Function warmed up and assumptions broken. Test with hotFunc(10) or hotFunc('test') in console.\n\n");
+                
+                const deoptResult = jitDeoptimization();
+                updateOutput(outputId, document.getElementById(outputId).innerText + "jitDeoptimization result (expected NaN or error): " + deoptResult);
+                console.log("JIT Exploit results:", { hotFunc, deoptResult });
+            } catch (e) {
+                updateOutput(outputId, "Error during JIT Exploit: " + e.message);
+                console.error("JIT Exploit error:", e);
+            }
+        }
+
+        /**
+         * Executes V8 Engine Deep Dive techniques.
+         * Calls v8HeapExploit and objectLayoutManipulation and displays results.
+         */
+        function v8DeepDive() {
+            const outputId = 'v8Output';
+            updateOutput(outputId, "Executing V8 Engine Deep Dive techniques...");
+            try {
+                const heapResult = v8HeapExploit();
+                updateOutput(outputId, "v8HeapExploit result: " + heapResult + "\n\n");
+                
+                const layoutResult = objectLayoutManipulation();
+                updateOutput(outputId, document.getElementById(outputId).innerText + "objectLayoutManipulation result (first 5 instances): " + JSON.stringify(layoutResult.slice(0, 5)));
+                console.log("V8 Deep Dive results:", { heapResult, layoutResult });
+            } catch (e) {
+                updateOutput(outputId, "Error during V8 Deep Dive: " + e.message);
+                console.error("V8 Deep Dive error:", e);
+            }
+        }
+
+        /**
+         * Executes Advanced Fuzzing Methods.
+         * Calls createFuzzingFramework and mutationFuzzer and displays results.
+         */
+        function advancedFuzzing() {
+            const outputId = 'fuzzOutput';
+            updateOutput(outputId, "Executing Advanced Fuzzing Methods...");
+            try {
+                const fuzzData = createFuzzingFramework();
+                updateOutput(outputId, "Fuzzing Framework Data (sample): " + JSON.stringify(fuzzData.strings.slice(0, 2)) + "\n\n");
+                
+                const sampleInput = "Hello World!";
+                const mutations = mutationFuzzer(sampleInput);
+                updateOutput(outputId, document.getElementById(outputId).innerText + `Mutation Fuzzer (sample of '${sampleInput}' mutations):\n` + JSON.stringify(mutations, null, 2));
+                console.log("Advanced Fuzzing results:", { fuzzData, mutations });
+            } catch (e) {
+                updateOutput(outputId, "Error during Fuzzing: " + e.message);
+                console.error("Fuzzing error:", e);
+            }
+        }
+    </script>
+</body>
+</html>

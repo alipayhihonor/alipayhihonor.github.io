@@ -1,0 +1,130 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebGPU Life</title>
+  </head>
+  <body>
+    <canvas width="512" height="512"></canvas>
+    <script type="module">
+      const canvas = document.querySelector("canvas");
+      if (!navigator.gpu) {
+          throw new Error("WebGPU not supported on this browser.");
+      }
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) {
+        throw new Error("No appropriate GPUAdapter found.");
+      }
+      const device = await adapter.requestDevice();
+      console.log(device);
+      const module = device.createShaderModule({
+          label: 'label',
+          code: `
+	  var<private> c: vec4<f32>;
+          var<private> d: array<i32, 256>;
+          
+          @group(0) @binding(0)
+          var<storage, read_write> e: array<vec4<f32>, 16>;
+          
+          fn f() {
+              var g: i32;
+              if c.x < 8 {
+                  return;
+              }
+          
+              loop {
+                  let ab = g;
+                  if ab >= 0 {
+                      let n = 0;
+                      if n >= 3 { break; }
+                      loop {
+                          g = 0;
+                          let p = d[ab];
+                          d[0] = 1;
+                          if p == 0 { break; }
+                      }
+                  }
+              }
+          }
+          
+          @fragment
+	  fn frag_main(@builtin(position) l: vec4<f32>) -> @location(0) vec4<f32> {
+              var q: array<vec4<f32>, 16>;
+              var ae: i32;
+              c = l;
+              let ah = i32(l.x);
+              loop {
+                  e = e;
+                  q = e;
+                  if ae < ah {
+                      break;
+                  }
+                  ae = 6;
+              }
+              c = q[ae];
+              f();
+	      return vec4<f32>();
+          }
+
+          @vertex
+          fn vs_main(@builtin(vertex_index) a: u32) -> @builtin(position) vec4<f32> {
+              return vec4<f32>(0.0, 0.0, 0.0, 0.0);
+          }
+          `,
+      });
+
+      const pipeline = device.createRenderPipeline({
+          label: 'render pipeline',
+          layout: 'auto',
+          vertex: {
+              module: module,
+              entryPoint: "vs_main",
+          },
+          fragment: {
+              module: module,
+              entryPoint: "frag_main",
+              targets: [
+                {
+                    format: navigator.gpu.getPreferredCanvasFormat(),
+                },
+              ],
+          },
+      });
+      console.log(pipeline);
+
+      const context = canvas.getContext("webgpu");
+      context.configure({
+        device: device,
+        format: navigator.gpu.getPreferredCanvasFormat(),
+        alphaMode: "premultiplied",
+      });
+
+      const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
+      const renderPassDescriptor = {
+          colorAttachments: [
+            {
+              clearValue: clearColor,
+              loadOp: "clear",
+              storeOp: "store",
+              view: context.getCurrentTexture().createView(),
+            },
+          ],
+          stencilWriteMask: 0,
+      };
+
+      let usage = GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC;
+      const workgroupBuffer1 = device.createBuffer({size: 256, usage: usage});
+      const bindGroup = device.createBindGroup({
+          layout: pipeline.getBindGroupLayout(0),
+          entries: [
+            { binding: 0, resource: { buffer: workgroupBuffer1 }},
+          ],
+      });
+
+      const encoder = device.createCommandEncoder({
+        label: 'encoder',
+      });
+    </script>
+  </body>
+</html>

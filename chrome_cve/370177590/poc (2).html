@@ -1,0 +1,64 @@
+<html>
+<head>
+<script id='2d-fragment-shader' type='x-shader/x-fragment'>#version 300 es
+precision highp float;
+
+layout(location = 0) out vec4 _GLF_color;
+
+void main() {
+ _GLF_color = vec4(1.0);
+}
+</script>
+<script id='2d-vertex-shader' type='x-shader/x-vertex'>#version 300 es
+void main() {}
+</script>
+</head>
+<body>
+<canvas id="canvas" width="100" height="100"></canvas>
+<div id=e_info>Loading...</div>
+<script>
+
+var canvas = document.getElementById('canvas');
+
+const gl = canvas.getContext('webgl2');
+
+const VS = `
+#version 300 es
+void main() {}
+`.trim();
+
+const FS = `
+#version 300 es
+precision highp float;
+
+layout(location = 0) out vec4 _GLF_color;
+
+void main() {
+ _GLF_color = vec4(1.0);
+}
+`.trim();
+
+var vShader4 = gl.createShader(gl.VERTEX_SHADER);
+gl.shaderSource(vShader4, VS);
+gl.compileShader(vShader4);
+
+var fShader4 = gl.createShader(gl.FRAGMENT_SHADER);
+gl.shaderSource(fShader4, FS);
+gl.compileShader(fShader4);
+
+program2 = gl.createProgram();
+gl.attachShader(program2,vShader4);
+gl.attachShader(program2,fShader4);
+gl.linkProgram(program2);
+gl.useProgram(program2);
+
+gl.vertexAttribDivisor(0, 0x414141);
+let mode, first, count;
+mode = 'TRIANGLES'; first = 0x414141; count = 0x414141;
+for (let i = 0; i < 1000*10000; i++) {
+  gl.drawArrays(gl[mode], first, count);
+}
+e_info.textContent = 'Ok!';
+</script>
+</body>
+</html>

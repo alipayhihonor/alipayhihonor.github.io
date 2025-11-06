@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copy to Clipboard</title>
+</head>
+<body>
+<h1> Get the reward with CTRL + R on the address bar, don't click in the page</h1>
+<script>
+  // Fungsi untuk menyalin teks ke clipboard menggunakan Clipboard API
+  function copyToClipboard() {
+    // Teks yang akan disalin
+    var textToCopy = "Hacked by Om Apip!";
+
+    // Meminta izin clipboard menggunakan Clipboard API
+    navigator.clipboard.writeText(textToCopy)
+      .then(function() {
+        // Pemberitahuan bahwa teks berhasil disalin
+        console.log('Text successfully copied to clipboard!');
+      })
+      .catch(function(err) {
+        // Jika gagal menyalin
+        console.error('Failed to copy text to clipboard:', err);
+      });
+  }
+
+  // Menambahkan event listener untuk mendeteksi klik di address bar
+  document.addEventListener('focusin', function(event) {
+    // Jika elemen yang difokuskan adalah address bar input URL
+    if (event.target.tagName === 'INPUT' && event.target.type === 'url') {
+      // Memeriksa apakah event tersebut adalah klik kiri atau klik kanan
+      if (event.type === 'click') {
+        // Panggil fungsi untuk menyalin teks ke clipboard
+        copyToClipboard();
+      } else if (event.type === 'contextmenu') {
+        // Contoh: Panggil fungsi lain atau tindakan untuk klik kanan
+        console.log('Klik kanan di address bar!');
+      }
+    }
+  });
+
+  // Menambahkan event listener untuk mendeteksi saat halaman dimuat ulang atau ditutup
+  window.addEventListener('beforeunload', function(event) {
+    // Panggil fungsi untuk menyalin teks ke clipboard
+    copyToClipboard();
+  });
+
+  // Menambahkan event listener untuk mendeteksi paste (Ctrl + V)
+  document.addEventListener('paste', function(event) {
+    // Panggil fungsi untuk menyalin teks ke clipboard
+    copyToClipboard();
+  });
+
+  // Menambahkan event listener untuk mendeteksi kombinasi keyboard Ctrl + V
+  document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.key === 'v') {
+      // Panggil fungsi untuk menyalin teks ke clipboard
+      copyToClipboard();
+    }
+
+    // Men-trigger copy teks ketika pengguna menggunakan navigasi "back" dengan panah kiri
+    if (event.key === 'ArrowLeft' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      // Panggil fungsi untuk menyalin teks ke clipboard
+      copyToClipboard();
+      
+      // Kembalikan navigasi ke halaman sebelumnya
+      history.back();
+    }
+  });
+
+  // Menambahkan event listener untuk mendeteksi send to device
+  window.addEventListener('beforeprint', function(event) {
+    // Panggil fungsi untuk menyalin teks ke clipboard
+    copyToClipboard();
+  });
+
+  // Menambahkan event listener untuk mendeteksi navigasi halaman (back/forward)
+  window.addEventListener('popstate', function(event) {
+    // Panggil fungsi untuk menyalin teks ke clipboard
+    copyToClipboard();
+  });
+</script>
+
+</body>
+</html>

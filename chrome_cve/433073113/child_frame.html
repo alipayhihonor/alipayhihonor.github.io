@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Permissions Policy Test - Child Frame</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 10px; background: #f8f9fa; }
+        button { padding: 8px 16px; margin: 5px; }
+        #log { font-family: monospace; font-size: 12px; border: 1px solid #ccc; padding: 8px; height: 200px; overflow-y: scroll; background: white; }
+        .success { color: #198754; }
+        .error { color: #dc3545; }
+        .warning { color: #fd7e14; }
+    </style>
+</head>
+<body>
+    <h3>Child Iframe (No Permissions)</h3>
+    <p>This iframe does NOT have <code>allow="prompt-unsafe-html"</code> permission.</p>
+    <button onclick="testUnsafeHtmlPermission()">Test Unsafe HTML Permission</button>
+    <button onclick="clearLog()">Clear Log</button>
+    <div id="log"></div>
+    <div id="exploit-target" style="border: 1px dashed #ccc; padding: 10px; margin: 10px 0;">
+        <em>Exploit target area (should remain safe)</em>
+    </div>
+    <script>
+        const log = (msg, className = '') => {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.textContent = `[${timestamp}] ${msg}`;
+            if (className) line.className = className;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+            // Also send to parent for logging
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'log',
+                    message: msg
+                }, '*');
+            }
+        };
+        const clearLog = () => {
+            document.getElementById('log').innerHTML = '';
+        };
+        async function testUnsafeHtmlPermission() {
+            log('=== Testing Permissions Policy Enforcement ===', 'warning');
+            if (!window.ai?.languageModel) {
+                log('❌ Prompt API not available in iframe', 'error');
+                return;
+            }
+            log('✓ Prompt API detected in iframe', 'success');
+            try {
+                // Create tool with allowsUnsafeHtml=true (should be blocked by policy)
+                const tools = [{
+                    name: 'unsafe_html_tool',
+                    description: 'Tool that processes unsafe HTML',
+                    allowsUnsafeHtml: true,  // This should be blocked!
+                    function: (html) => {
+                        log('⚠️ Unsafe HTML tool executed!', 'warning');
+                        // Attempt to write to DOM (this proves the bypass)
+                        const target = document.getElementById('exploit-target');
+                        target.innerHTML = html;
+                        return 'Unsafe HTML processed';
+                    }
+                }];
+                log('Creating AI model with allowsUnsafeHtml=true tool...', 'warning');
+                const model = await window.ai.languageModel.create({ tools });
+                log('✓ Model created successfully', 'success');
+                // Try to execute the unsafe HTML tool
+                log('Attempting to execute unsafe HTML tool...', 'warning');
+                const maliciousHTML = '<img src="x" onerror="alert(\'POLICY_BYPASS_SUCCESS\')">';
+                await model.execute({
+                    tool: 'unsafe_html_tool',
+                    html: maliciousHTML
+                });
+                log('🚨 VULNERABILITY CONFIRMED: allowsUnsafeHtml worked without permission!', 'error');
+                log('This represents a permissions policy bypass', 'error');
+                // Notify parent of successful bypass
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'policy-test-result',
+                        success: true,
+                        message: 'Permissions policy bypassed'
+                    }, '*');
+                }
+            } catch (e) {
+                log(`✓ Policy correctly enforced: ${e.message}`, 'success');
+                log('The allowsUnsafeHtml flag was properly blocked', 'success');
+                // Notify parent of proper enforcement
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'policy-test-result',
+                        success: false,
+                        message: 'Policy correctly enforced'
+                    }, '*');
+                }
+            }
+        }
+        window.addEventListener('load', () => {
+            log('Child iframe loaded. Testing permissions policy enforcement...');
+            if (window.ai) {
+                log('Prompt API available in child iframe');
+            } else {
+                log('Prompt API not available. Enable --enable-features=PromptApiForGeminiNano');
+            }
+        });
+    </script>
+</body>
+</html> 

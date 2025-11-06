@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <style>
+
+            table {
+                display : ruby-text;
+            }
+
+            #id_2 {
+                white-space-collapse : break-spaces;
+                margin-block : auto;
+            }
+
+            :root {
+                margin: 424.323456%;
+            }
+
+
+        </style>
+        <script>
+
+            function trigger() {
+
+                let var_1 = document.getElementById("id_1");
+                let var_2 = document.createElement("datalist"); 
+                document.body.appendChild(var_2);
+                var_1.replaceWith(var_2);
+
+                var_2.outerHTML = `
+                    
+                    <ruby></ruby>
+                    <ruby id="id_2"><table></ruby>
+                    <table dir="rtl" contextmenu="id_7" tabindex="0"></table>
+                    <table></table>
+
+                `;
+
+            }
+
+        </script>
+    </head>
+    <body onload="trigger()">
+        <table id="id_1"></table>
+    </body>
+</html>

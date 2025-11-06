@@ -1,0 +1,75 @@
+<body>
+<div id="output"></div>
+
+<canvas id="canvas">
+</canvas>
+
+<script>
+function output(str) {
+    document.getElementById("output").innerHTML += "<br>" + str;
+}
+
+function loadShader(gl, shaderType, shaderSource) {
+    let shader = gl.createShader(shaderType);
+    if (shader == null) {
+        output("Error: unable to create shader '" + shaderSource + "'");
+        return null;
+    }
+    gl.shaderSource(shader, shaderSource);
+    gl.compileShader(shader);
+    let compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    if (!compiled) {
+        let error = gl.getShaderInfoLog(shader);
+        output("*** Error compiling shader: " + error);
+        return null;
+    }
+    return shader;
+}
+
+function loadProgram(gl, vertexShaderSource, fragmentShaderSource) {
+    let vs = loadShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    let fs = loadShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    let program;
+    if (vs && fs) {
+        program = gl.createProgram(gl);
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+        gl.linkProgram(program);
+        let linked = gl.getProgramParameter(program, gl.LINK_STATUS);
+        if (!linked) {
+            let error = gl.getProgramInfoLog(program);
+            output("*** Error linking program: " + error);
+            gl.deleteProgram(program);
+            program = null;
+        }
+    }
+
+    return program;
+}
+
+
+
+function run() {
+    const vsText = `#version 300 es
+void main (void)
+{
+}`;
+    const fsText = `#version 300 es
+#extension GL_EXT_shader_framebuffer_fetch : enable
+precision mediump float;
+inout float var0[242];
+void main() {}`;
+
+    let gl = document.getElementById("canvas").getContext("webgl2");
+    let program = loadProgram(gl, vsText, fsText);
+    if (program) {
+        output("Test FAILED: this program shouldn't have compiled");
+    } else {
+        output("Test passed: program correctly failed to compile/link.");
+    }
+}
+
+requestAnimationFrame(() => { run(); });
+
+</script>
+</body>

@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Reproduce</title>
+  </head>
+  <body>
+    <canvas width="512" height="512"></canvas>
+    <script type="module">
+      const canvas = document.querySelector("canvas");
+      if (!navigator.gpu) {
+        throw new Error("WebGPU not supported on this browser.");
+      }
+      async function main() {
+        const adapter = await navigator.gpu.requestAdapter();
+        if (!adapter) {
+          throw new Error("No appropriate GPUAdapter found.");
+        }
+        const device = await adapter.requestDevice();
+        
+        const outputBufferSize = 200*32; 
+        const outputBuffer = device.createBuffer({
+          size: outputBufferSize,
+          usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+        });
+        
+        function generateShaderCode() {
+          const workgroupSize = 4; 
+          const elementsPerRow = 3; 
+          let shaderCode = `
+            struct AF {
+              low: u32,
+              high: u32,
+            };
+            struct Output {
+              @size(200) value: array<array<AF, 5>, 5>,
+            };
+            @group(0) @binding(0) var<storage, read_write> outputs: array<Output, 32>;
+            @compute @workgroup_size(1)
+            fn main() {
+          `;
+          for (let k = 0; k < 30; k++) {
+            for (let i = 0; i < workgroupSize; i++) {
+              for (let j = 0; j < elementsPerRow; j++) {
+                shaderCode += `
+                  { 
+                    const kExponentBias = 1022;
+                    const subnormal_or_zero: bool = (((-0.125) * (mat4x3(
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308
+                    )))[${i}][${j}] <= 2.225073858507201e-308) && (((-0.125) * (mat4x3(
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308
+                    )))[${i}][${j}] >= -2.225073858507201e-308);
+                    const sign_bit: u32 = select(0, 0x80000000, ((-0.125) * (mat4x3(
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308
+                    )))[${i}][${j}] < 0);
+                    const f = frexp(abs(((-0.125) * (mat4x3(
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308,
+                      -1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308
+                    )))[${i}][${j}]));
+                    const f_fract = select(f.fract, 0, subnormal_or_zero);
+                    const f_exp = select(f.exp, -kExponentBias, subnormal_or_zero);
+                    const exponent_bits: u32 = (f_exp + kExponentBias) << 20;
+                    const high_mantissa = ldexp(f_fract, 21);
+                    const high_mantissa_bits: u32 = u32(ldexp(f_fract, 21)) & 0x000fffff;
+                    const low_mantissa = f_fract - ldexp(floor(high_mantissa), -21);
+                    const low_mantissa_bits = u32(ldexp(low_mantissa, 53));
+                    outputs[${k}].value[${i}][${j}].high = sign_bit | exponent_bits | high_mantissa_bits;
+                    outputs[${k}].value[${i}][${j}].low = low_mantissa_bits;
+                    outputs[${k}].value[1][3].high = sign_bit | exponent_bits | high_mantissa_bits;
+                  }
+                `;
+              }
+            }
+          } 
+          for (let r = 0; r < 13; r++){
+            shaderCode += `
+            outputs[${r}].value[3][3].high = 4;
+            `
+          }
+          shaderCode += `
+            }
+          `;
+          return shaderCode;
+        }
+        const source = generateShaderCode();
+        const module = device.createShaderModule({ code: source });
+        const pipeline = await device.createComputePipelineAsync({
+          layout: 'auto',
+          compute: { module, entryPoint: 'main' },
+        });
+        const group = device.createBindGroup({
+          layout: pipeline.getBindGroupLayout(0),
+          entries: [{ binding: 0, resource: { buffer: outputBuffer } }],
+        });
+        const encoder = device.createCommandEncoder();
+        const pass = encoder.beginComputePass();
+        pass.setPipeline(pipeline);
+        pass.setBindGroup(0, group);
+        pass.dispatchWorkgroups(1);
+        pass.end();
+        device.queue.submit([encoder.finish()]);
+        device.queue.onSubmittedWorkDone().then(() => {
+          console.log("done");
+        });
+      }
+      main();
+    </script>
+  </body>
+</html>

