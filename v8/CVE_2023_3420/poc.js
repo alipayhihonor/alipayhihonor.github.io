@@ -1,3 +1,4 @@
+<script>
 let length = 10000;
 var padding = 40;
 
@@ -133,3 +134,4 @@ if (funcAddr == 0x7ff80000) {
 }
 write(code + 0x8, jitAddr[0] + 0x54 + 2, jitAddr[1]);
 func();
+</script>
