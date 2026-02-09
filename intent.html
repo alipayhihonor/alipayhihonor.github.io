@@ -2,12 +2,47 @@
  <html>
    <a href="intent://web?title_name=my&id=https://www.wenjuan.com/s/UZBZJvJMjVQ/#Intent;scheme=honormarket;end;">test</a>
   <script>
-     alert(hicareJsInterface.getDeviceName)
-  alert(hicareJsInterface.getDeviceSN)
-alert(hicareJsInterface.getAccessTokenFromCache)
-alert(hicareJsInterface.getAccessTokenOrServiceToken)
-alert(hicareJsInterface.getGooglePushToken)
-alert(hicareJsInterface.Token)
+   try {
+  alert("getAccessToken: " +      alert(hicareJsInterface.getDeviceName));
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
+
+      try {
+  alert("getAccessToken: " +   alert(hicareJsInterface.getDeviceSN));
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
+
+      try {
+  alert("getAccessToken: " + alert(hicareJsInterface.getAccessTokenFromCache));
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
+
+      try {
+  alert("getAccessToken: " + alert(hicareJsInterface.getAccessTokenOrServiceToken));
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
+
+      try {
+  alert("getAccessToken: " + alert(hicareJsInterface.getGooglePushToken));
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
+
+      try {
+  alert("getAccessToken: " + alert(hicareJsInterface.Token));
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
+
+
+
+
+
+
   </script>
  </html>
 
