@@ -1,0 +1,5 @@
+<script>
+alert(hicareJsInterface.getAccessTokenFromCache)
+alert(hicareJsInterface.getAccessTokenOrServiceToken)
+alert(hicareJsInterface.getGooglePushToken)
+</script>
