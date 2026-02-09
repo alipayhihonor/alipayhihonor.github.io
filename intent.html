@@ -4,30 +4,57 @@
   <script>
 
 
-      try {
-  alert("getAccessToken: " + hicareJsInterface.getGooglePushToken());
+try {
+  alert("getGooglePushToken: " + hicareJsInterface.getGooglePushToken());
 } catch (e) {
-  alert("getAccessToken error: " + e.message);
+  alert("getGooglePushToken error: " + e.message);
 }
 
-      try {
-  alert("getAccessToken: " + hicareJsInterface.getToken());
+try {
+  alert("getToken: " + hicareJsInterface.getToken());
 } catch (e) {
-  alert("getAccessToken error: " + e.message);
+  alert("getToken error: " + e.message);
+}
+
+try {
+  alert("getDeviceName: " + myHonorInterfaceOversea.getDeviceName());
+} catch (e) {
+  alert("getDeviceName error: " + e.message);
+}
+
+try {
+  alert("getAccessTokenFromCache: " + myHonorInterfaceOversea.getAccessTokenFromCache());
+} catch (e) {
+  alert("getAccessTokenFromCache error: " + e.message);
+}
+
+try {
+  alert("getAccessTokenOrServiceToken: " + myHonorInterfaceOversea.getAccessTokenOrServiceToken());
+} catch (e) {
+  alert("getAccessTokenOrServiceToken error: " + e.message);
+}
+
+try {
+  alert("getDeviceSN: " + myHonorInterfaceOversea.getDeviceSN());
+} catch (e) {
+  alert("getDeviceSN error: " + e.message);
+}
+
+try {
+  alert("getAccessTokenFromCache: " + myHonorInterfaceOversea.getAccessTokenFromCache());
+} catch (e) {
+  alert("getAccessTokenFromCache error: " + e.message);
+}
+
+try {
+  alert("getToken: " + myHonorInterfaceOversea.getToken());
+} catch (e) {
+  alert("getToken error: " + e.message);
 }
 
 
-   try {
-  alert("getAccessToken: " +      myHonorInterfaceOversea.getDeviceName());
-} catch (e) {
-  alert("getAccessToken error: " + e.message);
-}
 
-      try {
-  alert("getAccessToken: " +      myHonorInterfaceOversea.getAccessTokenFromCache());
-} catch (e) {
-  alert("getAccessToken error: " + e.message);
-}
+
 
 
   </script>
