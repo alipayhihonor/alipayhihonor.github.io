@@ -2,29 +2,7 @@
  <html>
    <a href="intent://web?title_name=my&id=https://www.wenjuan.com/s/UZBZJvJMjVQ/#Intent;scheme=honormarket;end;">test</a>
   <script>
-   try {
-  alert("getAccessToken: " +     hicareJsInterface.getDeviceName());
-} catch (e) {
-  alert("getAccessToken error: " + e.message);
-}
 
-      try {
-  alert("getAccessToken: " +   hicareJsInterface.getDeviceSN());
-} catch (e) {
-  alert("getAccessToken error: " + e.message);
-}
-
-      try {
-  alert("getAccessToken: " + hicareJsInterface.getAccessTokenFromCache());
-} catch (e) {
-  alert("getAccessToken error: " + e.message);
-}
-
-      try {
-  alert("getAccessToken: " + hicareJsInterface.getAccessTokenOrServiceToken());
-} catch (e) {
-  alert("getAccessToken error: " + e.message);
-}
 
       try {
   alert("getAccessToken: " + hicareJsInterface.getGooglePushToken());
@@ -33,7 +11,7 @@
 }
 
       try {
-  alert("getAccessToken: " + hicareJsInterface.Token());
+  alert("getAccessToken: " + hicareJsInterface.getToken());
 } catch (e) {
   alert("getAccessToken error: " + e.message);
 }
