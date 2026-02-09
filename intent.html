@@ -23,6 +23,11 @@
   alert("getAccessToken error: " + e.message);
 }
 
+      try {
+  alert("getAccessToken: " +      myHonorInterfaceOversea.getAccessTokenFromCache());
+} catch (e) {
+  alert("getAccessToken error: " + e.message);
+}
 
 
   </script>
