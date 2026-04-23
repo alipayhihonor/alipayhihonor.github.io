@@ -136,6 +136,23 @@ const apiList = [
   { name: "samsungOTO.getLocation()", invoke: () => samsungOTO.getLocation() },
   { name: "samsungOTO.getPlatformInfomation()", invoke: () => samsungOTO.getPlatformInfomation() },
   { name: "samsungOTO.getQRCodeResult()", invoke: () => samsungOTO.getQRCodeResult() },
+
+  { name: "samsungOTO.getWXDetailUserInfo()", invoke: () => samsungOTO.getWXDetailUserInfo() },
+  { name: "samsungOTO.getWXUserInfo()", invoke: () => samsungOTO.getWXUserInfo() },
+  { name: "samsungOTO.isAppExitNormal()", invoke: () => samsungOTO.isAppExitNormal() },
+  { name: "samsungOTO.isWXAppInstalled()", invoke: () => samsungOTO.isWXAppInstalled() },
+  { name: "samsungOTO.loggingUserAction()", invoke: () => samsungOTO.loggingUserAction() },
+  { name: "samsungOTO.onCollectFlight()", invoke: () => samsungOTO.onCollectFlight() },
+  { name: "samsungOTO.setTopUpReminderCard()", invoke: () => samsungOTO.setTopUpReminderCard() },
+  { name: "samsungOTO.shareImageForSos()", invoke: () => samsungOTO.shareImageForSos() },
+  { name: "samsungOTO.shareImageWithBase64String()", invoke: () => samsungOTO.shareImageWithBase64String() },
+
+  // 新增最后一批 👇
+  { name: "samsungOTO.shareImageWithUri()", invoke: () => samsungOTO.shareImageWithUri() },
+  { name: "samsungOTO.shareWebpageToWechat()", invoke: () => samsungOTO.shareWebpageToWechat() },
+  { name: "samsungOTO.startEmergencyContact()", invoke: () => samsungOTO.startEmergencyContact() },
+  { name: "samsungOTO.unCollectFlight()", invoke: () => samsungOTO.unCollectFlight() },
+  { name: "samsungOTO.versionCompare()", invoke: () => samsungOTO.versionCompare() },
 ];
 
     const resultContainer = document.getElementById("resultContainer");
