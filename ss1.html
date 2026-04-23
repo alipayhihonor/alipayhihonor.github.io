@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Android WebView JS 调用结果展示</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 24px;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #1677ff;
+      color: white;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background: #0958d9;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border-left: 6px solid #d9d9d9;
+    }
+
+    .card.success {
+      border-left-color: #52c41a;
+    }
+
+    .card.error {
+      border-left-color: #ff4d4f;
+    }
+
+    .method {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+
+    .status {
+      display: inline-block;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      color: white;
+    }
+
+    .status.pending {
+      background: #faad14;
+    }
+
+    .status.success {
+      background: #52c41a;
+    }
+
+    .status.error {
+      background: #ff4d4f;
+    }
+
+    .label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    pre {
+      background: #f7f7f7;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Android WebView JS 调用结果</h1>
+  <div class="desc">
+    在 <code>apiList</code> 中新增一行配置，即可自动展示方法调用结果或错误信息。
+  </div>
+
+  <div class="toolbar">
+    <button onclick="runAll()">执行全部</button>
+    <button onclick="clearResults()">清空结果</button>
+  </div>
+
+  <div id="resultContainer" class="container"></div>
+
+  <script>
+    /**
+     * 你只需要在这里加一行，就能新增一个展示项
+     * 例如：
+     * { name: "samsungOTO.getAddress()", invoke: () => samsungOTO.getAddress() },
+     */
+function buildInvoker(objName, method) {
+  return () => window[objName][method]();
+}
+
+const apiList = [
+  // ===== samsungOTO =====
+  { name: "samsungOTO.getAddress()", invoke: buildInvoker("samsungOTO", "getAddress") },
+  { name: "samsungOTO.getAppName()", invoke: buildInvoker("samsungOTO", "getAppName") },
+  { name: "samsungOTO.getClientInfo()", invoke: buildInvoker("samsungOTO", "getClientInfo") },
+  { name: "samsungOTO.getContacts()", invoke: buildInvoker("samsungOTO", "getContacts") },
+  { name: "samsungOTO.getEncryptOAID()", invoke: buildInvoker("samsungOTO", "getEncryptOAID") },
+  { name: "samsungOTO.getEncryptThirdPartyUid()", invoke: buildInvoker("samsungOTO", "getEncryptThirdPartyUid") },
+  { name: "samsungOTO.getLocation()", invoke: buildInvoker("samsungOTO", "getLocation") },
+  { name: "samsungOTO.getPlatformInfomation()", invoke: buildInvoker("samsungOTO", "getPlatformInfomation") },
+  // { name: "samsungOTO.getQRCodeResult()", invoke: buildInvoker("samsungOTO", "getQRCodeResult") },
+
+  { name: "samsungOTO.getWXDetailUserInfo()", invoke: buildInvoker("samsungOTO", "getWXDetailUserInfo") },
+  { name: "samsungOTO.getWXUserInfo()", invoke: buildInvoker("samsungOTO", "getWXUserInfo") },
+  { name: "samsungOTO.isAppExitNormal()", invoke: buildInvoker("samsungOTO", "isAppExitNormal") },
+  { name: "samsungOTO.isWXAppInstalled()", invoke: buildInvoker("samsungOTO", "isWXAppInstalled") },
+  { name: "samsungOTO.loggingUserAction()", invoke: buildInvoker("samsungOTO", "loggingUserAction") },
+  { name: "samsungOTO.onCollectFlight()", invoke: buildInvoker("samsungOTO", "onCollectFlight") },
+  { name: "samsungOTO.setTopUpReminderCard()", invoke: buildInvoker("samsungOTO", "setTopUpReminderCard") },
+  { name: "samsungOTO.shareImageForSos()", invoke: buildInvoker("samsungOTO", "shareImageForSos") },
+  { name: "samsungOTO.shareImageWithBase64String()", invoke: buildInvoker("samsungOTO", "shareImageWithBase64String") },
+
+  { name: "samsungOTO.shareImageWithUri()", invoke: buildInvoker("samsungOTO", "shareImageWithUri") },
+  { name: "samsungOTO.shareWebpageToWechat()", invoke: buildInvoker("samsungOTO", "shareWebpageToWechat") },
+  { name: "samsungOTO.startEmergencyContact()", invoke: buildInvoker("samsungOTO", "startEmergencyContact") },
+  { name: "samsungOTO.unCollectFlight()", invoke: buildInvoker("samsungOTO", "unCollectFlight") },
+  { name: "samsungOTO.versionCompare()", invoke: buildInvoker("samsungOTO", "versionCompare") },
+
+  // ===== SebHandlerInterface =====
+  { name: "SebHandlerInterface.downloadFile()", invoke: buildInvoker("SebHandlerInterface", "downloadFile") },
+  { name: "SebHandlerInterface.enterEcommerceTab()", invoke: buildInvoker("SebHandlerInterface", "enterEcommerceTab") },
+  { name: "SebHandlerInterface.finishActivity()", invoke: buildInvoker("SebHandlerInterface", "finishActivity") },
+  { name: "SebHandlerInterface.getJDTrackUrl()", invoke: buildInvoker("SebHandlerInterface", "getJDTrackUrl") },
+  { name: "SebHandlerInterface.getOAID()", invoke: buildInvoker("SebHandlerInterface", "getOAID") },
+  { name: "SebHandlerInterface.getOriginalReferrer()", invoke: buildInvoker("SebHandlerInterface", "getOriginalReferrer") },
+  { name: "SebHandlerInterface.getTraceId()", invoke: buildInvoker("SebHandlerInterface", "getTraceId") },
+  { name: "SebHandlerInterface.isDeviceRoot()", invoke: buildInvoker("SebHandlerInterface", "isDeviceRoot") },
+  { name: "SebHandlerInterface.isInDarkMode()", invoke: buildInvoker("SebHandlerInterface", "isInDarkMode") },
+
+  // 新增这一批 👇
+  { name: "SebHandlerInterface.isShoppingAssistantOn()", invoke: buildInvoker("SebHandlerInterface", "isShoppingAssistantOn") },
+  { name: "SebHandlerInterface.newWebViewActivityWithHomeAsUp()", invoke: buildInvoker("SebHandlerInterface", "newWebViewActivityWithHomeAsUp") },
+  { name: "SebHandlerInterface.newWebViewActivityWithoutActionbar()", invoke: buildInvoker("SebHandlerInterface", "newWebViewActivityWithoutActionbar") },
+  { name: "SebHandlerInterface.preventParentTouchEvent()", invoke: buildInvoker("SebHandlerInterface", "preventParentTouchEvent") },
+  { name: "SebHandlerInterface.setNeedReload()", invoke: buildInvoker("SebHandlerInterface", "setNeedReload") },
+  { name: "SebHandlerInterface.setTitle()", invoke: buildInvoker("SebHandlerInterface", "setTitle") },
+  { name: "SebHandlerInterface.tapBanner()", invoke: buildInvoker("SebHandlerInterface", "tapBanner") },
+  { name: "SebHandlerInterface.turnOnShoppingAssistant()", invoke: buildInvoker("SebHandlerInterface", "turnOnShoppingAssistant") },
+];
+
+    const resultContainer = document.getElementById("resultContainer");
+
+    function formatValue(value) {
+      if (value === undefined) return "undefined";
+      if (value === null) return "null";
+      if (typeof value === "string") return value;
+
+      try {
+        return JSON.stringify(value, null, 2);
+      } catch (e) {
+        return String(value);
+      }
+    }
+
+    function createCard(item) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="method">${escapeHtml(item.name)}</div>
+        <div class="status pending">执行中</div>
+        <div class="label">结果</div>
+        <pre class="result">等待执行...</pre>
+        <div class="label" style="margin-top:12px;">错误信息</div>
+        <pre class="errorText">无</pre>
+      `;
+
+      resultContainer.appendChild(card);
+      return card;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function runOne(item) {
+      const card = createCard(item);
+      const statusEl = card.querySelector(".status");
+      const resultEl = card.querySelector(".result");
+      const errorEl = card.querySelector(".errorText");
+
+      try {
+        // 兼容同步方法 / Promise 方法
+        const result = await Promise.resolve(item.invoke());
+
+        card.classList.add("success");
+        statusEl.className = "status success";
+        statusEl.textContent = "成功";
+        resultEl.textContent = formatValue(result);
+        errorEl.textContent = "无";
+      } catch (err) {
+        card.classList.add("error");
+        statusEl.className = "status error";
+        statusEl.textContent = "失败";
+        resultEl.textContent = "无结果";
+        errorEl.textContent = err && err.stack ? err.stack : String(err);
+      }
+    }
+
+    async function runAll() {
+      clearResults();
+      for (const item of apiList) {
+        await runOne(item);
+      }
+    }
+
+    function clearResults() {
+      resultContainer.innerHTML = "";
+    }
+
+    // 页面加载后自动执行，可按需注释掉
+    window.onload = () => {
+      runAll();
+    };
+  </script>
+</body>
+</html>
