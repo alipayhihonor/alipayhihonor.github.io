@@ -1,79 +1,251 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TEST</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .info {
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
-
 <body>
 <a href="https://alipayhihonor.github.io/js.html">https://alipayhihonor.github.io/js.html</a>
-  <div class="info" id="info"></div>
-  <script>
 
-  var js_white_list = [
-  "showDirectoryPicker", "showOpenFilePicker", "showSaveFilePicker", "$$t2config", "$$t2pageType", "POSTMESSAGE_FAST", "ucVersion", "defaultStatus", "defaultstatus", "caches", "window", "self", "document", "name", "location", "customElements", "history", "navigation", "locationbar", "menubar", "personalbar", "scrollbars", "statusbar", "toolbar", "status", "closed", "frames", "length", "top", "opener", "parent", "frameElement", "navigator", "origin",
-  "external", "screen", "innerWidth", "innerHeight", "scrollX", "pageXOffset", "scrollY", "pageYOffset", "visualViewport", "screenX", "screenY", "outerWidth", "outerHeight", "devicePixelRatio", "event", "clientInformation", "screenLeft", "screenTop", "styleMedia", "onsearch", "isSecureContext", "trustedTypes", "performance", "onappinstalled", "onbeforeinstallprompt", "crypto", "indexedDB", "sessionStorage", "localStorage", "onbeforexrselect", "onabort", "onbeforeinput", "onbeforematch", "onbeforetoggle", "onblur", "oncancel", "oncanplay", "oncanplaythrough", "onchange", "onclick", "onclose", "oncontentvisibilityautostatechange", "oncontextlost", "oncontextmenu", "oncontextrestored",
-  "oncuechange", "ondblclick", "ondrag", "ondragend", "ondragenter", "ondragleave", "ondragover", "ondragstart", "ondrop", "ondurationchange", "onemptied", "onended", "onerror", "onfocus", "onformdata", "oninput", "oninvalid", "onkeydown", "onkeypress", "onkeyup", "onload", "onloadeddata",
-  "onloadedmetadata", "onloadstart", "onmousedown", "onmouseenter", "onmouseleave", "onmousemove", "onmouseout", "onmouseover", "onmouseup", "onmousewheel", "onpause", "onplay", "onplaying", "onprogress", "onratechange", "onreset", "onresize", "onscroll", "onsecuritypolicyviolation", "onseeked", "onseeking", "onselect", "onslotchange", "onstalled", "onsubmit", "onsuspend", "ontimeupdate", "ontoggle", "onvolumechange", "onwaiting", "onwebkitanimationend", "onwebkitanimationiteration", "onwebkitanimationstart", "onwebkittransitionend", "onwheel", "onauxclick", "ongotpointercapture", "onlostpointercapture", "onpointerdown", "onpointermove", "onpointerrawupdate", "onpointerup", "onpointercancel", "onpointerover", "onpointerout", "onpointerenter", "onpointerleave", "onselectstart", "onselectionchange", "onanimationend", "onanimationiteration", "onanimationstart", "ontransitionrun", "ontransitionstart", "ontransitionend", "ontransitioncancel",
-  "onafterprint", "onbeforeprint", "onbeforeunload", "onhashchange", "onlanguagechange", "onmessage", "onmessageerror", "onoffline", "ononline", "onpagehide", "onpageshow", "onpopstate", "onrejectionhandled", "onstorage", "onunhandledrejection", "onunload",
-  "crossOriginIsolated", "scheduler", "alert", "atob", "blur", "btoa", "cancelAnimationFrame", "cancelIdleCallback", "captureEvents", "clearInterval", "clearTimeout", "close", "confirm", "createImageBitmap", "fetch", "find", "focus", "getComputedStyle", "getSelection", "matchMedia", "moveBy", "moveTo", "open", "postMessage", "print", "prompt", "queueMicrotask", "releaseEvents", "reportError", "requestAnimationFrame", "requestIdleCallback", "resizeBy", "resizeTo", "scroll", "scrollBy", "scrollTo", "setInterval", "setTimeout", "stop", "cache", "cookieStore", "getScreenDetails", "ondevicemotion", "ondeviceorientation", "ondeviceorientationabsolute", "structuredClone", "webkitCancelAnimationFrame", "webkitRequestAnimationFrame", "originAgentCluster", "onorientationchange", "orientation", "onpageswap", "onpagereveal", "credentialless", "onscrollend", "onscrollsnapchange", "onscrollsnapchanging", "ontouchcancel", "ontouchend", "ontouchmove", "ontouchstart", "openDatabase", "jsonObj", "list", "key"
+<div class="container">
+  <h1>JS Interface Scanner</h1>
+  <p class="desc">自动扫描 window 中疑似注入的 JS 接口，并展示接口方法与参数数量。</p>
+
+  <div class="summary" id="summary"></div>
+  <div id="result"></div>
+</div>
+
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    background: #f5f7fb;
+    color: #1f2937;
+  }
+
+  a {
+    display: block;
+    margin: 20px;
+    color: #2563eb;
+    text-decoration: none;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 24px;
+  }
+
+  h1 {
+    margin-bottom: 8px;
+    font-size: 28px;
+  }
+
+  .desc {
+    color: #6b7280;
+    margin-bottom: 24px;
+  }
+
+  .summary {
+    background: #111827;
+    color: white;
+    padding: 16px 20px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    font-size: 15px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #111827;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+
+  th, td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  th {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .empty {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  .error {
+    color: #dc2626;
+    font-size: 13px;
+  }
+</style>
+
+<script>
+var js_white_list = [
+  "showDirectoryPicker", "showOpenFilePicker", "showSaveFilePicker", "$$t2config", "$$t2pageType",
+  "POSTMESSAGE_FAST", "ucVersion", "defaultStatus", "defaultstatus", "caches", "window", "self",
+  "document", "name", "location", "customElements", "history", "navigation", "locationbar",
+  "menubar", "personalbar", "scrollbars", "statusbar", "toolbar", "status", "closed", "frames",
+  "length", "top", "opener", "parent", "frameElement", "navigator", "origin", "external",
+  "screen", "innerWidth", "innerHeight", "scrollX", "pageXOffset", "scrollY", "pageYOffset",
+  "visualViewport", "screenX", "screenY", "outerWidth", "outerHeight", "devicePixelRatio",
+  "event", "clientInformation", "screenLeft", "screenTop", "styleMedia", "alert", "confirm",
+  "prompt", "fetch", "open", "postMessage", "print", "setInterval", "setTimeout",
+  "localStorage", "sessionStorage", "indexedDB", "crypto", "performance",
+  "jsonObj", "list", "key"
 ];
 
-  var jsonObj = {};
-var list = [];
+var jsonObj = {};
+var errors = [];
+
 for (var key in window) {
-  if (window.hasOwnProperty(key)) {
-    let key_l = key.toLowerCase();
+  if (window.hasOwnProperty(key)) {
+    if (
+      !js_white_list.includes(key) &&
+      key !== "jsonObj" &&
+      key !== "list" &&
+      key !== "key" &&
+      key !== "js_white_list" &&
+      key !== "details" &&
+      key !== "properties" &&
+      key !== "propDetails"
+    ) {
+      try {
+        var properties = Object.getOwnPropertyNames(window[key]);
+        var details = properties.map(function(prop) {
+          return prop;
+        });
 
-    if (!js_white_list.includes(key) && key !== "jsonobj" && key !== "list" && key !== "key" && key !== "js_white_list" && key !== "details" && key !== "properties" && key !== "propdetails") {
-      try {
-        var properties = Object.getOwnPropertyNames(window[key]);
-        var details = properties.map(function(prop) {
-          var propDetails = window[key][prop];
-          return prop;
-        });
+        if (details.length > 0) {
+          jsonObj[key] = {};
 
-        // 只在 details 不为空时添加到 jsonObj
-        if (details.length > 0) {
-          jsonObj[key] = {};
-          details.forEach(function(detail) {
-            if (typeof window[key][detail] === 'function') {
-              jsonObj[key][detail] = {
-                argCount: window[key][detail].length
-              };
-            } else {
-              jsonObj[key][detail] = null; // 或者其他适当的值
-            }
-          });
-        }
-
-      } catch (e) {
-        // Handle the error if window[key] is not an object
-        alert(`Error accessing properties of ${key}: ${e.message}`);
-      }
-    }
-  }
+          details.forEach(function(detail) {
+            try {
+              if (typeof window[key][detail] === "function") {
+                jsonObj[key][detail] = {
+                  type: "function",
+                  argCount: window[key][detail].length
+                };
+              } else {
+                jsonObj[key][detail] = {
+                  type: typeof window[key][detail],
+                  argCount: null
+                };
+              }
+            } catch (e) {
+              jsonObj[key][detail] = {
+                type: "access_error",
+                error: e.message,
+                argCount: null
+              };
+            }
+          });
+        }
+      } catch (e) {
+        errors.push("Error accessing properties of " + key + ": " + e.message);
+      }
+    }
+  }
 }
 
-// alert(JSON.stringify(jsonObj, null, 4));
-    
-for (let key in jsonObj) {
-  if (jsonObj.hasOwnProperty(key)) {
-    alert(`Key: ${key}, Value: ${JSON.stringify(jsonObj[key], null, 4)}`);
-  }
+renderResult(jsonObj, errors);
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
+function renderResult(data, errors) {
+  var resultEl = document.getElementById("result");
+  var summaryEl = document.getElementById("summary");
+
+  var interfaceNames = Object.keys(data);
+  var methodCount = 0;
+
+  interfaceNames.forEach(function(name) {
+    methodCount += Object.keys(data[name]).length;
+  });
+
+  summaryEl.innerHTML =
+    "发现接口数量：<b>" + interfaceNames.length + "</b>，" +
+    "属性/方法数量：<b>" + methodCount + "</b>，" +
+    "错误数量：<b>" + errors.length + "</b>";
+
+  if (interfaceNames.length === 0) {
+    resultEl.innerHTML = '<div class="empty">未发现疑似 JS 注入接口</div>';
+    return;
+  }
+
+  var html = "";
+
+  interfaceNames.forEach(function(interfaceName) {
+    var methods = data[interfaceName];
+
+    html += '<div class="card">';
+    html += '<div class="card-title">' + escapeHtml(interfaceName) + '</div>';
+    html += '<table>';
+    html += '<thead><tr><th>属性 / 方法名</th><th>类型</th><th>参数数量</th></tr></thead>';
+    html += '<tbody>';
+
+    Object.keys(methods).forEach(function(methodName) {
+      var item = methods[methodName];
+
+      html += '<tr>';
+      html += '<td>' + escapeHtml(methodName) + '</td>';
+      html += '<td><span class="badge">' + escapeHtml(item.type) + '</span></td>';
+      html += '<td>' + (item.argCount === null ? "-" : item.argCount) + '</td>';
+      html += '</tr>';
+
+      if (item.error) {
+        html += '<tr><td colspan="3" class="error">' + escapeHtml(item.error) + '</td></tr>';
+      }
+    });
+
+    html += '</tbody></table></div>';
+  });
+
+  if (errors.length > 0) {
+    html += '<div class="card">';
+    html += '<div class="card-title">访问错误</div>';
+    errors.forEach(function(err) {
+      html += '<p class="error">' + escapeHtml(err) + '</p>';
+    });
+    html += '</div>';
+  }
+
+  resultEl.innerHTML = html;
+}
 </script>
-
 </body>
-</html>
