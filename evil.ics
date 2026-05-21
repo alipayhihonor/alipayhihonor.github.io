@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Attacker//Fake Calendar//EN
+
+BEGIN:VEVENT
+UID:12345
+DTSTAMP:20260521T120000Z
+DTSTART:20260522T090000Z
+DTEND:20260522T100000Z
+SUMMARY:Your Honor Account Will Be Disabled
+DESCRIPTION:Click here to verify:
+ https://alipayhihonor.github.io
+LOCATION:https://alipayhihonor.github.io
+END:VEVENT
+
+END:VCALENDAR
