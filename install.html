@@ -1,21 +1,44 @@
 <script>
-                    var input = {"data":{"appKey":1,"packageName":"com.bytxmt.banyuetan"},"_dscbstub":"dscb3"};
-                var _handleMessageFromNative = function(p1){
+    var pkgName = "com.bytxmt.banyuetan";
 
-                          // get appKey
-                          var dataArray = JSON.parse(p1.data);
-                          var obj = JSON.parse(dataArray[0]);
-                          var newAppKey = obj.appKey;
-                        input.data.appKey = newAppKey;
-                         //alert(newAppKey);
-                }
-                _dsbridge.call("_dsb.dsinit",JSON.stringify({"data":null}));
+    var downloadData = {
+        downloadUrl: "https://example.com/app.apk",
+        pkgName: pkgName,
 
-                _dsbridge.call("download.queryAppList",JSON.stringify({"data":{"pkgNameList":"com.bytxmt.banyuetan","pagingQueryId":"pagingQueryId"},"_dscbstub":"dscb2"}));
-                setTimeout(function() {
-                          //download
-                          //alert(input.data.appKey);
-                          //alert(JSON.stringify(input));
-                  _dsbridge.call("download.downloadButtonOnClick",JSON.stringify(input));
-                }, 1000);     
+        // 以下坐标不是必需，但 startDownLoad 会尝试读取
+        downX: 100,
+        downY: 100,
+        upX: 100,
+        upY: 100
+    };
+
+    window.dscb1 = function (result) {
+        console.log("queryState callback: " + JSON.stringify(result));
+        delete window.dscb1;
+    };
+
+    window.dscb2 = function (result) {
+        console.log("startDownLoad callback: " + JSON.stringify(result));
+        delete window.dscb2;
+    };
+
+    // 查询当前应用下载状态
+    _dsbridge.call(
+        "download.queryState",
+        JSON.stringify({
+            data: downloadData,
+            _dscbstub: "dscb1"
+        })
+    );
+
+    setTimeout(function () {
+        // 触发下载
+        _dsbridge.call(
+            "download.startDownLoad",
+            JSON.stringify({
+                data: downloadData,
+                _dscbstub: "dscb2"
+            })
+        );
+    }, 1000);
 </script>
