@@ -1,44 +1,30 @@
 <script>
-    var pkgName = "com.bytxmt.banyuetan";
+    function callNative(method, data, callbackName) {
+        window[callbackName] = function (result) {
+            alert(method + " callback: " + JSON.stringify(result));
+        };
 
-    var downloadData = {
-        downloadUrl: "https://example.com/app.apk",
-        pkgName: pkgName,
+        _dsbridge.call(
+            method,
+            JSON.stringify({
+                data: data,
+                _dscbstub: callbackName
+            })
+        );
+    }
 
-        // 以下坐标不是必需，但 startDownLoad 会尝试读取
+    var data = {
+        downloadUrl: "https://f-droid.org/F-Droid.apk",
+        pkgName: "com.example.test",
         downX: 100,
         downY: 100,
         upX: 100,
         upY: 100
     };
 
-    window.dscb1 = function (result) {
-        console.log("queryState callback: " + JSON.stringify(result));
-        delete window.dscb1;
-    };
-
-    window.dscb2 = function (result) {
-        console.log("startDownLoad callback: " + JSON.stringify(result));
-        delete window.dscb2;
-    };
-
-    // 查询当前应用下载状态
-    _dsbridge.call(
-        "download.queryState",
-        JSON.stringify({
-            data: downloadData,
-            _dscbstub: "dscb1"
-        })
-    );
+    callNative("download.queryState", data, "dscb_query");
 
     setTimeout(function () {
-        // 触发下载
-        _dsbridge.call(
-            "download.startDownLoad",
-            JSON.stringify({
-                data: downloadData,
-                _dscbstub: "dscb2"
-            })
-        );
+        callNative("download.startDownLoad", data, "dscb_download");
     }, 1000);
 </script>
