@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Geolocation Test</title>
+</head>
+<body>
+<h2>Geolocation Permission Test</h2>
+
+<button onclick="getLocation()">Get Location</button>
+
+<pre id="result"></pre>
+
+<script>
+function getLocation() {
+    const result = document.getElementById("result");
+
+    if (!navigator.geolocation) {
+        result.textContent = "Geolocation is not supported";
+        return;
+    }
+
+    result.textContent = "Requesting location...";
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            result.textContent =
+                "Latitude: " + position.coords.latitude + "\n" +
+                "Longitude: " + position.coords.longitude + "\n" +
+                "Accuracy: " + position.coords.accuracy + " meters";
+        },
+        function(error) {
+            result.textContent =
+                "Error: " + error.message;
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+</script>
+
+</body>
+</html>
