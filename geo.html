@@ -1,45 +1,172 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Geolocation Test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Location Permission Test</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.card {
+    width: 90%;
+    max-width: 420px;
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,.2);
+}
+
+.icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    margin: 0 0 15px;
+    color: #333;
+    font-size: 28px;
+}
+
+p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+button {
+    margin-top: 30px;
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 12px;
+    background: #4f46e5;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(.98);
+}
+
+.result {
+    margin-top: 25px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 12px;
+    text-align: left;
+    word-break: break-all;
+    color: #333;
+    min-height: 80px;
+}
+</style>
+
 </head>
+
+
 <body>
-<h2>Geolocation Permission Test</h2>
 
-<button onclick="getLocation()">Get Location</button>
+<div class="card">
 
-<pre id="result"></pre>
+    <div class="icon">
+        📍
+    </div>
+
+    <h1>
+        Location Access
+    </h1>
+
+    <p>
+        Click the button below to verify your current location.
+        This page requires location permission.
+    </p>
+
+
+    <button onclick="requestLocation()">
+        Allow Location Access
+    </button>
+
+
+    <div class="result" id="result">
+        Waiting for permission...
+    </div>
+
+</div>
+
 
 <script>
-function getLocation() {
-    const result = document.getElementById("result");
 
-    if (!navigator.geolocation) {
-        result.textContent = "Geolocation is not supported";
+function requestLocation(){
+
+    let result = document.getElementById("result");
+
+    result.innerHTML = "Requesting location...";
+
+
+    if(!navigator.geolocation){
+
+        result.innerHTML =
+            "Geolocation is not supported";
+
         return;
     }
 
-    result.textContent = "Requesting location...";
 
     navigator.geolocation.getCurrentPosition(
-        function(position) {
-            result.textContent =
-                "Latitude: " + position.coords.latitude + "\n" +
-                "Longitude: " + position.coords.longitude + "\n" +
-                "Accuracy: " + position.coords.accuracy + " meters";
+
+        function(position){
+
+            result.innerHTML =
+            `
+            <b>Location Received</b><br><br>
+            Latitude:
+            ${position.coords.latitude}<br>
+
+            Longitude:
+            ${position.coords.longitude}<br>
+
+            Accuracy:
+            ${position.coords.accuracy} meters
+            `;
         },
-        function(error) {
-            result.textContent =
-                "Error: " + error.message;
+
+
+        function(error){
+
+            result.innerHTML =
+            `
+            <b>Error</b><br>
+            ${error.message}
+            `;
+
         },
+
+
         {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            enableHighAccuracy:true,
+            timeout:10000,
+            maximumAge:0
         }
+
     );
 }
+
 </script>
 
 </body>
