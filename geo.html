@@ -4,77 +4,154 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Location Permission Test</title>
+<title>WebView Permission Test</title>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 }
+
 
 .card {
-    width: 90%;
-    max-width: 420px;
-    background: white;
-    border-radius: 20px;
-    padding: 40px 30px;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,.2);
+
+    width:90%;
+    max-width:420px;
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:35px 30px;
+
+    text-align:center;
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.25);
+
 }
+
 
 .icon {
-    font-size: 64px;
-    margin-bottom: 20px;
+
+    font-size:64px;
+
 }
+
 
 h1 {
-    margin: 0 0 15px;
-    color: #333;
-    font-size: 28px;
+
+    color:#333;
+
+    margin:15px 0;
+
 }
+
 
 p {
-    color: #666;
-    font-size: 16px;
-    line-height: 1.5;
+
+    color:#666;
+
+    line-height:1.5;
+
 }
+
+
 
 button {
-    margin-top: 30px;
-    width: 100%;
-    padding: 18px;
-    border: none;
-    border-radius: 12px;
-    background: #4f46e5;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
+
+    width:100%;
+
+    margin-top:18px;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:12px;
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
 }
+
+
+.location {
+
+    background:#4f46e5;
+
+}
+
+
+.camera {
+
+    background:#16a34a;
+
+}
+
+
 
 button:active {
-    transform: scale(.98);
+
+    transform:scale(.98);
+
 }
 
+
+
 .result {
-    margin-top: 25px;
-    padding: 15px;
-    background: #f5f5f5;
-    border-radius: 12px;
-    text-align: left;
-    word-break: break-all;
-    color: #333;
-    min-height: 80px;
+
+    margin-top:25px;
+
+    padding:15px;
+
+    min-height:100px;
+
+    background:#f5f5f5;
+
+    border-radius:12px;
+
+    text-align:left;
+
+    font-size:14px;
+
+    word-break:break-word;
+
 }
+
+
+video {
+
+    margin-top:15px;
+
+    width:100%;
+
+    border-radius:12px;
+
+    display:none;
+
+}
+
+
 </style>
 
 </head>
@@ -82,92 +159,203 @@ button:active {
 
 <body>
 
+
 <div class="card">
 
-    <div class="icon">
-        📍
-    </div>
 
-    <h1>
-        Location Access
-    </h1>
-
-    <p>
-        Click the button below to verify your current location.
-        This page requires location permission.
-    </p>
+<div class="icon">
+🔐
+</div>
 
 
-    <button onclick="requestLocation()">
-        Allow Location Access
-    </button>
+<h1>
+WebView Permission Test
+</h1>
 
 
-    <div class="result" id="result">
-        Waiting for permission...
-    </div>
+<p>
+Test Geolocation and Camera permissions
+inside Android WebView.
+</p>
+
+
+
+<button class="location"
+onclick="requestLocation()">
+
+📍 Allow Location
+
+</button>
+
+
+
+<button class="camera"
+onclick="requestCamera()">
+
+📷 Allow Camera
+
+</button>
+
+
+
+<video id="video" autoplay></video>
+
+
+<div class="result" id="result">
+
+Waiting for permission...
 
 </div>
 
 
+
+</div>
+
+
+
 <script>
+
+
+const result =
+document.getElementById("result");
+
+
 
 function requestLocation(){
 
-    let result = document.getElementById("result");
 
-    result.innerHTML = "Requesting location...";
-
-
-    if(!navigator.geolocation){
-
-        result.innerHTML =
-            "Geolocation is not supported";
-
-        return;
-    }
+result.innerHTML =
+"Requesting location...";
 
 
-    navigator.geolocation.getCurrentPosition(
+if(!navigator.geolocation){
 
-        function(position){
+result.innerHTML =
+"Geolocation unavailable";
 
-            result.innerHTML =
-            `
-            <b>Location Received</b><br><br>
-            Latitude:
-            ${position.coords.latitude}<br>
+return;
 
-            Longitude:
-            ${position.coords.longitude}<br>
-
-            Accuracy:
-            ${position.coords.accuracy} meters
-            `;
-        },
-
-
-        function(error){
-
-            result.innerHTML =
-            `
-            <b>Error</b><br>
-            ${error.message}
-            `;
-
-        },
-
-
-        {
-            enableHighAccuracy:true,
-            timeout:10000,
-            maximumAge:0
-        }
-
-    );
 }
 
+
+
+navigator.geolocation.getCurrentPosition(
+
+(position)=>{
+
+
+result.innerHTML =
+
+`
+<b>Location Granted</b><br><br>
+
+Latitude:
+${position.coords.latitude}<br>
+
+Longitude:
+${position.coords.longitude}<br>
+
+Accuracy:
+${position.coords.accuracy} meters
+`;
+
+},
+
+
+(error)=>{
+
+
+result.innerHTML =
+
+`
+<b>Location Error</b><br>
+${error.message}
+`;
+
+},
+
+
+{
+
+enableHighAccuracy:true,
+
+timeout:10000,
+
+maximumAge:0
+
+}
+
+);
+
+
+}
+
+
+
+
+
+async function requestCamera(){
+
+
+result.innerHTML =
+"Requesting camera...";
+
+
+try{
+
+
+const stream =
+
+await navigator.mediaDevices.getUserMedia({
+
+video:true,
+
+audio:false
+
+});
+
+
+
+const video =
+document.getElementById("video");
+
+
+video.srcObject = stream;
+
+video.style.display="block";
+
+
+
+result.innerHTML =
+
+`
+<b>Camera Granted</b><br><br>
+Video stream started.
+`;
+
+
+
+}
+
+catch(e){
+
+
+result.innerHTML =
+
+`
+<b>Camera Error</b><br>
+${e.message}
+`;
+
+}
+
+
+}
+
+
+
 </script>
+
 
 </body>
 </html>
