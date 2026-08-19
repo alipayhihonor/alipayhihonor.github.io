@@ -3,210 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Honor JSBridge 调试终端</title>
+    <title>JSBridge 手机端调试</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h2 {
-            color: #2c3e50;
-            border-left: 5px solid #007bff;
-            padding-left: 15px;
-            margin-bottom: 25px;
-        }
-        .log-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #28a745;
-            animation: fadeIn 0.5s ease;
-        }
-        .log-card.error {
-            border-left-color: #dc3545;
-        }
-        .log-header {
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .timestamp {
-            font-size: 0.8em;
-            color: #888;
-        }
-        .item {
-            margin: 8px 0;
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .label {
-            font-weight: 600;
-            color: #495057;
-            width: 120px;
-            flex-shrink: 0;
-        }
-        .value {
-            font-family: 'Consolas', 'Monaco', monospace;
-            background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #d63384;
-            word-break: break-all;
-            flex: 1;
-        }
-        .json-block {
-            display: block;
-            white-space: pre-wrap;
-            margin-top: 5px;
-            line-height: 1.4;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        body { background: #000; color: #ccc; font-family: monospace; margin: 0; padding: 10px; font-size: 14px; }
+        #debug-console { word-break: break-all; }
+        .log-entry { border-bottom: 1px solid #333; padding: 10px 5px; margin-bottom: 5px; }
+        
+        /* 不同类型的显示样式 */
+        .type-info { border-left: 4px solid #2196F3; background: #111; }
+        .type-error { border-left: 4px solid #f44336; background: #2a1010; color: #ffbaba; }
+        .type-callback { border-left: 4px solid #4CAF50; background: #102a10; color: #baffba; }
+        
+        .label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 12px; opacity: 0.7; }
+        pre { white-space: pre-wrap; margin: 0; font-size: 13px; }
+        .time { float: right; color: #666; font-size: 11px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>JSBridge 调用日志</h2>
-    <div id="display-area">
-        <!-- 结果将显示在这里 -->
+    <div style="padding: 10px; color: #fff; border-bottom: 1px solid #444; margin-bottom: 10px;">
+        <strong>DEBUG TERMINAL</strong>
     </div>
-</div>
+    
+    <div id="debug-console"></div>
 
 <script>
-    /**
-     * 美观地渲染结果到页面
-     */
-    function renderLog(title, data, isError = false) {
-        const displayArea = document.getElementById('display-area');
-        const card = document.createElement('div');
-        card.className = `log-card ${isError ? 'error' : ''}`;
+    // --- 核心显示引擎：直接操作 DOM ---
+    function printToScreen(title, content, type = 'info') {
+        const consoleEl = document.getElementById('debug-console');
+        const entry = document.createElement('div');
+        entry.className = `log-entry type-${type}`;
         
-        const now = new Date().toLocaleTimeString();
+        const time = new Date().toLocaleTimeString();
+        let text = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
         
-        let content = `<div class="log-header">
-                        <span>${title}</span>
-                        <span class="timestamp">${now}</span>
-                      </div>`;
-
-        for (let key in data) {
-            let val = data[key];
-            // 尝试格式化 JSON 字符串
-            if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
-                try {
-                    val = JSON.stringify(JSON.parse(val), null, 2);
-                } catch(e) {}
-            }
-            
-            content += `
-                <div class="item">
-                    <span class="label">${key}:</span>
-                    <span class="value ${typeof val === 'string' && val.includes('\n') ? 'json-block' : ''}">${val}</span>
-                </div>`;
-        }
+        entry.innerHTML = `
+            <span class="time">${time}</span>
+            <span class="label">[${title}]</span>
+            <pre>${text}</pre>
+        `;
         
-        card.innerHTML = content;
-        displayArea.prepend(card); // 最新的显示在最上面
+        // 新日志放在最上面，方便手机查看
+        consoleEl.insertBefore(entry, consoleEl.firstChild);
     }
 
-    /**
-     * 回调函数
-     */
-    function MyCallback(callbackId, eventType, data, d, e) {
+    // --- 1. 捕获全局 JavaScript 错误 (如变量未定义) ---
+    window.onerror = function(msg, url, line, col, error) {
+        printToScreen("脚本运行错误", {
+            message: msg,
+            line: line,
+            stack: error ? error.stack : '无堆栈信息'
+        }, 'error');
+        return false; 
+    };
+
+    // --- 2. 定义回调函数 ---
+    window.MyCallback = function(callbackId, eventType, data, d, e) {
         try {
-            renderLog("收到回调 (MyCallback)", {
-                "Callback ID": callbackId,
-                "Event Type": eventType,
-                "Data": data,
-                "Param D": d,
-                "Param E": e
-            });
+            printToScreen("Native 回调触发", {
+                id: callbackId,
+                type: eventType,
+                data: data,
+                extraD: d,
+                extraE: e
+            }, 'callback');
         } catch (err) {
-            console.error("渲染回调数据失败:", err);
+            printToScreen("回调内部逻辑报错", err.message, 'error');
         }
+    };
+
+    // --- 3. 执行 Native 调用 (分块执行，互不干扰) ---
+
+    // 准备数据
+    let test_Json = "";
+    try {
+        test_Json = JSON.stringify({
+            "packageName": "jp.pokemon.pokemonunite",
+            "trackingParameter": "test",
+            "externalJson": "test",
+            "showToast": "you are hacked",
+            "isRefresh": true
+        });
+        printToScreen("数据准备", "JSON 构建成功", 'info');
+    } catch (e) {
+        printToScreen("数据准备失败", e.message, 'error');
     }
 
-    /**
-     * 安全调用 Native 方法的封装
-     */
-    function safeNativeCall(classPath, methodName, jsonParams, id, callbackName) {
-        try {
-            renderLog("发起调用", {
-                "Method": methodName,
-                "Class": classPath || "(Empty)",
-                "Params": jsonParams
-            });
-
-            if (window.Native && typeof window.Native.nativeMethod === 'function') {
-                window.Native.nativeMethod(classPath, methodName, jsonParams, id, callbackName);
-            } else {
-                throw new Error("window.Native.nativeMethod 未定义，请在荣耀容器环境中运行");
-            }
-        } catch (error) {
-            renderLog("调用异常", {
-                "Error": error.message,
-                "Method": methodName,
-                "Target": classPath
-            }, true);
-        }
-    }
-
-    // --- 执行逻辑 ---
-
-    // 1. 准备测试数据
-    let test_Json = JSON.stringify({
-        "packageName": "jp.pokemon.pokemonunite",
-        "trackingParameter": "test",
-        "externalJson": "test",
-        "showToast": "you are hacked",
-        "isRefresh": true
-    });
-
-    // 2. 执行第一个调用
-    safeNativeCall(
-        "com.hihonor.hm.h5.container.js.method.DeviceMethods", 
-        "getAppDeviceInfo", 
-        test_Json, 
-        "3", 
-        "MyCallback"
-    );
-
-    // 3. 执行第二个调用 (即使上面的失败，这里也会执行)
-    safeNativeCall(
-        "", 
-        "getUserInfo", 
-        "{}", 
-        "1", 
-        "MyCallback"
-    );
-
-    // 示例：模拟被注释掉的延迟调用逻辑
-    /*
-    setTimeout(() => {
-        safeNativeCall(
-            'com.hihonor.gamecenter.bu_h5.manager.AppOperateImp',
-            'downloadButtonOnClick',
-            '{"packageName":"com.outfit7.mytalkingtomfree"}',
-            'unique_id_123',
-            'MyCallback'
+    // 调用 1: getAppDeviceInfo
+    try {
+        printToScreen("发起调用", "getAppDeviceInfo...", 'info');
+        window.Native.nativeMethod(
+            "com.hihonor.hm.h5.container.js.method.DeviceMethods", 
+            "getAppDeviceInfo", 
+            test_Json, 
+            "3", 
+            "MyCallback"
         );
+    } catch (e) {
+        // 如果 window.Native 不存在，这里会直接在屏幕显示红色错误
+        printToScreen("调用 1 失败", "错误详情: " + e.toString(), 'error');
+    }
+
+    // 调用 2: getUserInfo
+    try {
+        printToScreen("发起调用", "getUserInfo...", 'info');
+        window.Native.nativeMethod("", "getUserInfo", "{}", "1", "MyCallback");
+    } catch (e) {
+        printToScreen("调用 2 失败", "错误详情: " + e.toString(), 'error');
+    }
+
+    // 延迟调用示例
+    setTimeout(function() {
+        try {
+            // 这里可以放你之前注释掉的测试代码
+            // printToScreen("延迟任务", "开始执行...", 'info');
+        } catch (e) {
+            printToScreen("延迟任务报错", e.message, 'error');
+        }
     }, 500);
-    */
 
 </script>
-
 </body>
 </html>
