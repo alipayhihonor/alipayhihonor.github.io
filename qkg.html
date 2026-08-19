@@ -1,59 +1,210 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TEST</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .info {
-      margin-bottom: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Honor JSBridge 调试终端</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #2c3e50;
+            border-left: 5px solid #007bff;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .log-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+            animation: fadeIn 0.5s ease;
+        }
+        .log-card.error {
+            border-left-color: #dc3545;
+        }
+        .log-header {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #888;
+        }
+        .item {
+            margin: 8px 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .label {
+            font-weight: 600;
+            color: #495057;
+            width: 120px;
+            flex-shrink: 0;
+        }
+        .value {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #d63384;
+            word-break: break-all;
+            flex: 1;
+        }
+        .json-block {
+            display: block;
+            white-space: pre-wrap;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-
 <body>
-  <div class="info" id="info"></div>
-  <script>
-    function MyCallback(callbackId, eventType, data, d, e) {
-      alert("callbackId: " + JSON.stringify(callbackId) + " eventType: " + eventType + " data: " + JSON.stringify(data) + " d: " + d + " e: " + e);
-  }
-  let test_Json = JSON.stringify(
-    {"packageName": "jp.pokemon.pokemonunite",
-    "trackingParameter": "test",
-    "externalJson": "test",
-    "showToast": "you are hacked",
-     "isRefresh": true
-  });
-     window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "3", "MyCallback");
-//        window.Native.nativeMethod("com.hihonor.quickgamecenter.h5.method.JSMethodImpl", "getUserInfo", test_Json, "3", "MyCallback"); 
-//     //window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "1", "MyCallback");
-// window.Native.nativeMethod("com.hihonor.gamecenter.bu_h5.manager.JSMethodImp", "getUserInfo", test_Json, "3", "MyCallback"); 
-window.Native.nativeMethod("", "getUserInfo", "{}", "1", "MyCallback");
+
+<div class="container">
+    <h2>JSBridge 调用日志</h2>
+    <div id="display-area">
+        <!-- 结果将显示在这里 -->
+    </div>
+</div>
+
+<script>
+    /**
+     * 美观地渲染结果到页面
+     */
+    function renderLog(title, data, isError = false) {
+        const displayArea = document.getElementById('display-area');
+        const card = document.createElement('div');
+        card.className = `log-card ${isError ? 'error' : ''}`;
         
-    // var honorBridgeCallback = function(p1){
-    //     alert(JSON.stringify(p1));
-    // }
+        const now = new Date().toLocaleTimeString();
+        
+        let content = `<div class="log-header">
+                        <span>${title}</span>
+                        <span class="timestamp">${now}</span>
+                      </div>`;
 
-    // var install=function (){
-
-    //     Native.nativeMethod('com.hihonor.gamecenter.bu_h5.manager.AppOperateImp','downloadButtonOnClick','{"packageName":"com.outfit7.mytalkingtomfree","trackingParameter":"gm00202|v=3|pg=HTY_BA68CJ68QWVE53EAGJBU13yxfly|ssd=H2|pos=2|reqId=ca17dc88967e4a27b1d17c51fc6d9d31|impId=Bb46","externalJson":"","showToast":"1"}','_downloadButtonOnClick_AU_7dox6TT','honorBridgeCallback');
-    // };
-    // setTimeout(install,500);
-
-
-    // var test=function (){
-
-    //     window.location.href='yy://return/_fetchQueue/[{"handlerName":"queryAppInformation","data":{"pkgNameList":[com.outfit7.mytalkingtomfree","com.outfit7.mytalkingtomfree"],"callbackId":"2316774"},"callbackId":"cb_2_1728743559783"}]';
-    // };
-    // setTimeout(test,100);
-    // window.location.href='yy://__QUEUE_MESSAGE__/';
-
-
+        for (let key in data) {
+            let val = data[key];
+            // 尝试格式化 JSON 字符串
+            if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+                try {
+                    val = JSON.stringify(JSON.parse(val), null, 2);
+                } catch(e) {}
+            }
             
+            content += `
+                <div class="item">
+                    <span class="label">${key}:</span>
+                    <span class="value ${typeof val === 'string' && val.includes('\n') ? 'json-block' : ''}">${val}</span>
+                </div>`;
+        }
+        
+        card.innerHTML = content;
+        displayArea.prepend(card); // 最新的显示在最上面
+    }
+
+    /**
+     * 回调函数
+     */
+    function MyCallback(callbackId, eventType, data, d, e) {
+        try {
+            renderLog("收到回调 (MyCallback)", {
+                "Callback ID": callbackId,
+                "Event Type": eventType,
+                "Data": data,
+                "Param D": d,
+                "Param E": e
+            });
+        } catch (err) {
+            console.error("渲染回调数据失败:", err);
+        }
+    }
+
+    /**
+     * 安全调用 Native 方法的封装
+     */
+    function safeNativeCall(classPath, methodName, jsonParams, id, callbackName) {
+        try {
+            renderLog("发起调用", {
+                "Method": methodName,
+                "Class": classPath || "(Empty)",
+                "Params": jsonParams
+            });
+
+            if (window.Native && typeof window.Native.nativeMethod === 'function') {
+                window.Native.nativeMethod(classPath, methodName, jsonParams, id, callbackName);
+            } else {
+                throw new Error("window.Native.nativeMethod 未定义，请在荣耀容器环境中运行");
+            }
+        } catch (error) {
+            renderLog("调用异常", {
+                "Error": error.message,
+                "Method": methodName,
+                "Target": classPath
+            }, true);
+        }
+    }
+
+    // --- 执行逻辑 ---
+
+    // 1. 准备测试数据
+    let test_Json = JSON.stringify({
+        "packageName": "jp.pokemon.pokemonunite",
+        "trackingParameter": "test",
+        "externalJson": "test",
+        "showToast": "you are hacked",
+        "isRefresh": true
+    });
+
+    // 2. 执行第一个调用
+    safeNativeCall(
+        "com.hihonor.hm.h5.container.js.method.DeviceMethods", 
+        "getAppDeviceInfo", 
+        test_Json, 
+        "3", 
+        "MyCallback"
+    );
+
+    // 3. 执行第二个调用 (即使上面的失败，这里也会执行)
+    safeNativeCall(
+        "", 
+        "getUserInfo", 
+        "{}", 
+        "1", 
+        "MyCallback"
+    );
+
+    // 示例：模拟被注释掉的延迟调用逻辑
+    /*
+    setTimeout(() => {
+        safeNativeCall(
+            'com.hihonor.gamecenter.bu_h5.manager.AppOperateImp',
+            'downloadButtonOnClick',
+            '{"packageName":"com.outfit7.mytalkingtomfree"}',
+            'unique_id_123',
+            'MyCallback'
+        );
+    }, 500);
+    */
 
 </script>
 
