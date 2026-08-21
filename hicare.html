@@ -1,8 +1,40 @@
-<script>
-  alert(hicareJsInterface.getDeviceName)
-  alert(hicareJsInterface.getDeviceSN)
-alert(hicareJsInterface.getAccessTokenFromCache)
-alert(hicareJsInterface.getAccessTokenOrServiceToken)
-alert(hicareJsInterface.getGooglePushToken)
-alert(hicareJsInterface.Token)
-</script>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>打开应用市场详情页</title>
+</head>
+<body>
+  <button id="openMarket">打开“负一屏”详情页</button>
+
+  <script>
+    document.getElementById("openMarket").addEventListener("click", function () {
+      const intentUrl =
+        "intent://details" +
+        "?key_ext_sdk_callback_params=%7B%7D" +
+        "&is_from_download_install_sdk=true" +
+        "&request_id=_com.larus.nova_-1_1786616126584" +
+        "&channel=0" +
+        "&isAd=false" +
+        "&key_sdk_version=21" +
+        "&key_launcher_install_type=0" +
+        "&id=com.larus.nova" +
+        "&appName=%E8%B4%9F%E4%B8%80%E5%B1%8F" +
+        "&caller=com.hihonor.hiboard" +
+        "&sceneType=0604" +
+        "&callerApkVer=110004201" +
+        "&caller_process_name=com.hihonor.hiboard" +
+        "&detailType=3" +
+        "&downloadType=3" +
+        "&inner_launch_package=com.hihonor.hiboard" +
+        "#Intent;" +
+        "scheme=market;" +
+        "package=com.hihonor.appmarket;" +
+        "end";
+
+      window.location.href = intentUrl;
+    });
+  </script>
+</body>
+</html>
