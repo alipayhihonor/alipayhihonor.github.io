@@ -1,6 +1,6 @@
 # alipayhihonor.github.io
-[click](https://alipayhihonor.github.io/js)
+[js](https://alipayhihonor.github.io/js)
 
 
-[click](https://alipayhihonor.github.io/club)
+[club](https://alipayhihonor.github.io/club)
 
