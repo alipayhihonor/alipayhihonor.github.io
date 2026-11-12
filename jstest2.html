@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font:22px monospace;padding:12px;white-space:pre-wrap"><div id="o">init</div>
+<script>
+var o=document.getElementById('o');
+function t(s){o.textContent+=s+"\n";}
+t("origin="+location.origin);
+var b=null,nm="";
+for(var k in window){try{var v=window[k];if(v&&typeof v.getCplc==='function'){b=v;nm=k;break;}}catch(e){}}
+t("bridge="+(b?nm:"NONE"));
+try{b.proxyRequest(9001,"test",0,"","",false,"prcb");t("proxy_called");}catch(e){t("proxy_err="+e.message);}
+</script></body></html>
